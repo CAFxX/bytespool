@@ -12,6 +12,7 @@ package bytespool
 import (
 	"bufio"
 	"bytes"
+	"github.com/CAFxX/bytespool/internal"
 	"io"
 	"net/http/httputil"
 	"sync"
@@ -77,7 +78,7 @@ func GetBytesSlice256() []byte {
 		return *p
 	}
 	if b := getb256(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 256)
 	return p
@@ -91,7 +92,7 @@ func GetBytesSlicePtr256() *[]byte {
 		return p
 	}
 	if b := getb256(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 256)
@@ -271,7 +272,7 @@ func GetBytesSlice512() []byte {
 		return *p
 	}
 	if b := getb512(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 512)
 	return p
@@ -285,7 +286,7 @@ func GetBytesSlicePtr512() *[]byte {
 		return p
 	}
 	if b := getb512(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 512)
@@ -465,7 +466,7 @@ func GetBytesSlice1K() []byte {
 		return *p
 	}
 	if b := getb1K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 1024)
 	return p
@@ -479,7 +480,7 @@ func GetBytesSlicePtr1K() *[]byte {
 		return p
 	}
 	if b := getb1K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 1024)
@@ -659,7 +660,7 @@ func GetBytesSlice2K() []byte {
 		return *p
 	}
 	if b := getb2K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 2048)
 	return p
@@ -673,7 +674,7 @@ func GetBytesSlicePtr2K() *[]byte {
 		return p
 	}
 	if b := getb2K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 2048)
@@ -853,7 +854,7 @@ func GetBytesSlice4K() []byte {
 		return *p
 	}
 	if b := getb4K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 4096)
 	return p
@@ -867,7 +868,7 @@ func GetBytesSlicePtr4K() *[]byte {
 		return p
 	}
 	if b := getb4K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 4096)
@@ -1047,7 +1048,7 @@ func GetBytesSlice8K() []byte {
 		return *p
 	}
 	if b := getb8K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 8192)
 	return p
@@ -1061,7 +1062,7 @@ func GetBytesSlicePtr8K() *[]byte {
 		return p
 	}
 	if b := getb8K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 8192)
@@ -1241,7 +1242,7 @@ func GetBytesSlice16K() []byte {
 		return *p
 	}
 	if b := getb16K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 16384)
 	return p
@@ -1255,7 +1256,7 @@ func GetBytesSlicePtr16K() *[]byte {
 		return p
 	}
 	if b := getb16K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 16384)
@@ -1435,7 +1436,7 @@ func GetBytesSlice32K() []byte {
 		return *p
 	}
 	if b := getb32K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 32768)
 	return p
@@ -1449,7 +1450,7 @@ func GetBytesSlicePtr32K() *[]byte {
 		return p
 	}
 	if b := getb32K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 32768)
@@ -1629,7 +1630,7 @@ func GetBytesSlice64K() []byte {
 		return *p
 	}
 	if b := getb64K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 65536)
 	return p
@@ -1643,7 +1644,7 @@ func GetBytesSlicePtr64K() *[]byte {
 		return p
 	}
 	if b := getb64K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 65536)
@@ -1823,7 +1824,7 @@ func GetBytesSlice128K() []byte {
 		return *p
 	}
 	if b := getb128K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 131072)
 	return p
@@ -1837,7 +1838,7 @@ func GetBytesSlicePtr128K() *[]byte {
 		return p
 	}
 	if b := getb128K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 131072)
@@ -2017,7 +2018,7 @@ func GetBytesSlice256K() []byte {
 		return *p
 	}
 	if b := getb256K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 262144)
 	return p
@@ -2031,7 +2032,7 @@ func GetBytesSlicePtr256K() *[]byte {
 		return p
 	}
 	if b := getb256K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 262144)
@@ -2211,7 +2212,7 @@ func GetBytesSlice512K() []byte {
 		return *p
 	}
 	if b := getb512K(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 524288)
 	return p
@@ -2225,7 +2226,7 @@ func GetBytesSlicePtr512K() *[]byte {
 		return p
 	}
 	if b := getb512K(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 524288)
@@ -2405,7 +2406,7 @@ func GetBytesSlice1M() []byte {
 		return *p
 	}
 	if b := getb1M(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 1048576)
 	return p
@@ -2419,7 +2420,7 @@ func GetBytesSlicePtr1M() *[]byte {
 		return p
 	}
 	if b := getb1M(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 1048576)
@@ -2599,7 +2600,7 @@ func GetBytesSlice2M() []byte {
 		return *p
 	}
 	if b := getb2M(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 2097152)
 	return p
@@ -2613,7 +2614,7 @@ func GetBytesSlicePtr2M() *[]byte {
 		return p
 	}
 	if b := getb2M(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 2097152)
@@ -2793,7 +2794,7 @@ func GetBytesSlice4M() []byte {
 		return *p
 	}
 	if b := getb4M(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 4194304)
 	return p
@@ -2807,7 +2808,7 @@ func GetBytesSlicePtr4M() *[]byte {
 		return p
 	}
 	if b := getb4M(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 4194304)
@@ -2987,7 +2988,7 @@ func GetBytesSlice8M() []byte {
 		return *p
 	}
 	if b := getb8M(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 8388608)
 	return p
@@ -3001,7 +3002,7 @@ func GetBytesSlicePtr8M() *[]byte {
 		return p
 	}
 	if b := getb8M(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 8388608)
@@ -3181,7 +3182,7 @@ func GetBytesSlice16M() []byte {
 		return *p
 	}
 	if b := getb16M(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
 	p := make([]byte, 16777216)
 	return p
@@ -3195,7 +3196,7 @@ func GetBytesSlicePtr16M() *[]byte {
 		return p
 	}
 	if b := getb16M(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
 	p := make([]byte, 16777216)
@@ -3907,15 +3908,4 @@ func PutBufioWriter(w *bufio.Writer) bool {
 		return false
 	}
 	return true
-}
-
-func bb2bs(b *bytes.Buffer) []byte {
-	var zeros [256]byte
-	b.Reset()
-	c, r := b.Cap()/len(zeros), b.Cap()%len(zeros)
-	for i := 0; i < c; i++ {
-		b.Write(zeros[:])
-	}
-	b.Write(zeros[:r])
-	return b.Bytes()
 }

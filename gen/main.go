@@ -25,6 +25,7 @@ import (
 	"io"
 	"net/http/httputil"
 	"sync"	
+	"github.com/CAFxX/bytespool/internal"
 )
 
 var buckets = [...]int{ {{range .}}{{.Bytes}},{{end}} }
@@ -88,7 +89,7 @@ func GetBytesSlice{{.Short}}() []byte {
         return *p
 	}
 	if b := getb{{.Short}}(); b != nil {
-		return bb2bs(b)
+		return internal.Bb2bs(b)
 	}
     p := make([]byte, {{.Bytes}})
     return p
@@ -102,7 +103,7 @@ func GetBytesSlicePtr{{.Short}}() *[]byte {
         return p
 	}
 	if b := getb{{.Short}}(); b != nil {
-		p := bb2bs(b)
+		p := internal.Bb2bs(b)
 		return &p
 	}
     p := make([]byte, {{.Bytes}})
@@ -351,17 +352,6 @@ func PutBufioWriter(w *bufio.Writer) bool {
 		return false
 	}
 	return true
-}
-
-func bb2bs(b *bytes.Buffer) []byte {
-	var zeros [256]byte
-	b.Reset()
-	c, r := b.Cap() / len(zeros), b.Cap() % len(zeros)
-	for i := 0; i < c; i++ {
-		b.Write(zeros[:])
-	} 
-	b.Write(zeros[:r])
-	return b.Bytes()
 }
 `
 
