@@ -10,40 +10,39 @@
 package bytespool
 
 import (
-	"bytes"
 	"bufio"
+	"bytes"
 	"io"
 	"net/http/httputil"
-	"sync"	
+	"sync"
 )
 
-var buckets = [...]int{ 256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216, }
+var buckets = [...]int{256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216}
 
-
-var pool256  sync.Pool // *[]byte, 256 <= cap < 512
+var pool256 sync.Pool  // *[]byte, 256 <= cap < 512
 var poolb256 sync.Pool // *bytes.Buffer, 256 <= Cap < 512
 var poolr256 sync.Pool // *bufio.Reader, 256 <= Size < 512
 var poolw256 sync.Pool // *bufio.Writer, 256 <= Size < 512
 
 func get256() *[]byte {
-    p, _ := pool256.Get().(*[]byte)
-    return p
+	p, _ := pool256.Get().(*[]byte)
+	return p
 }
 
 func getb256() *bytes.Buffer {
-    b, _ := poolb256.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb256.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr256() *bufio.Reader {
-    r, _ := poolr256.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr256.Get().(*bufio.Reader)
+	return r
+}
 
 func getw256() *bufio.Writer {
-    w, _ := poolw256.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw256.Get().(*bufio.Writer)
+	return w
+}
 
 func put256(b *[]byte) {
 	pool256.Put(b)
@@ -63,46 +62,46 @@ func putw256(w *bufio.Writer) {
 
 // GetBytesBuffer256 gets a bytes.Buffer with a capacity of at least 256 bytes.
 func GetBytesBuffer256() *bytes.Buffer {
-    if b := getb256(); b != nil {
-        return b
+	if b := getb256(); b != nil {
+		return b
 	}
 	if p := get256(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 256))
+	return bytes.NewBuffer(make([]byte, 256))
 }
 
 // GetBytesSlice256 gets a byte slice with a capacity of at least 256 bytes and length of 256 bytes.
 func GetBytesSlice256() []byte {
-    if p := get256(); p != nil {
-        return *p
+	if p := get256(); p != nil {
+		return *p
 	}
 	if b := getb256(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 256)
-    return p
+	p := make([]byte, 256)
+	return p
 }
 
 // GetBytesSlicePtr256 is like GetBytesSlice256 but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice256 requires a pointer-sized allocation per call, whereas PutBytesSlicePtr256 does not
 // allocate.
 func GetBytesSlicePtr256() *[]byte {
-    if p := get256(); p != nil {
-        return p
+	if p := get256(); p != nil {
+		return p
 	}
 	if b := getb256(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 256)
-    return &p
+	p := make([]byte, 256)
+	return &p
 }
 
 func GetBufioReader256(pr io.Reader) *bufio.Reader {
 	if r := getr256(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 256)
 }
@@ -110,7 +109,7 @@ func GetBufioReader256(pr io.Reader) *bufio.Reader {
 func GetBufioWriter256(pw io.Writer) *bufio.Writer {
 	if w := getw256(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 256)
 }
@@ -121,15 +120,15 @@ func GetBufioWriter256(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer256 is optimized for bytes.Buffer of capacity [256, 512) but will accepts other
 // sizes as well.
 func PutBytesBuffer256(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 256 || l >= 512 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 256 || l >= 512 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb256(b)
-    return true
+	putb256(b)
+	return true
 }
 
 // PutBytesSlice256 recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -139,53 +138,53 @@ func PutBytesBuffer256(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice256, contrary to PutBytesSlicePtr256, will perform a pointer-sized allocation for each call.
 func PutBytesSlice256(p []byte) bool {
-    if l := cap(p); l < 256 || l >= 512 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:256]
-    put256(&p)
-    return true
+	if l := cap(p); l < 256 || l >= 512 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:256]
+	put256(&p)
+	return true
 }
 
-// PutBytesSlicePtr256 is like PutBytesSlice256, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr256 is like PutBytesSlice256, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr256(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 256 || l >= 512 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:256]
-    put256(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 256 || l >= 512 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:256]
+	put256(p)
+	return true
 }
 
 func PutBufioReader256(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 256 || l >= 512 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 256 || l >= 512 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr256(r)
-    return true
+	putr256(r)
+	return true
 }
 
 func PutBufioWriter256(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 256 || l >= 512 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 256 || l >= 512 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw256(w)
-    return true
+	putw256(w)
+	return true
 }
 
-// BufferPool256 is a httputil.BufferPool that provides byte slices of 256 bytes. 
+// BufferPool256 is a httputil.BufferPool that provides byte slices of 256 bytes.
 type BufferPool256 struct {
 	httputil.BufferPool
 }
@@ -202,7 +201,7 @@ func (_ BufferPool256) Put(b []byte) {
 
 // BufferPtrPool256 is like BufferPool256, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool256 struct {}
+type BufferPtrPool256 struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr256 for details.
 func (_ BufferPtrPool256) Get() *[]byte {
@@ -214,30 +213,30 @@ func (_ BufferPtrPool256) Put(b *[]byte) {
 	PutBytesSlicePtr256(b)
 }
 
-var pool512  sync.Pool // *[]byte, 512 <= cap < 1024
+var pool512 sync.Pool  // *[]byte, 512 <= cap < 1024
 var poolb512 sync.Pool // *bytes.Buffer, 512 <= Cap < 1024
 var poolr512 sync.Pool // *bufio.Reader, 512 <= Size < 1024
 var poolw512 sync.Pool // *bufio.Writer, 512 <= Size < 1024
 
 func get512() *[]byte {
-    p, _ := pool512.Get().(*[]byte)
-    return p
+	p, _ := pool512.Get().(*[]byte)
+	return p
 }
 
 func getb512() *bytes.Buffer {
-    b, _ := poolb512.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb512.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr512() *bufio.Reader {
-    r, _ := poolr512.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr512.Get().(*bufio.Reader)
+	return r
+}
 
 func getw512() *bufio.Writer {
-    w, _ := poolw512.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw512.Get().(*bufio.Writer)
+	return w
+}
 
 func put512(b *[]byte) {
 	pool512.Put(b)
@@ -257,46 +256,46 @@ func putw512(w *bufio.Writer) {
 
 // GetBytesBuffer512 gets a bytes.Buffer with a capacity of at least 512 bytes.
 func GetBytesBuffer512() *bytes.Buffer {
-    if b := getb512(); b != nil {
-        return b
+	if b := getb512(); b != nil {
+		return b
 	}
 	if p := get512(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 512))
+	return bytes.NewBuffer(make([]byte, 512))
 }
 
 // GetBytesSlice512 gets a byte slice with a capacity of at least 512 bytes and length of 512 bytes.
 func GetBytesSlice512() []byte {
-    if p := get512(); p != nil {
-        return *p
+	if p := get512(); p != nil {
+		return *p
 	}
 	if b := getb512(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 512)
-    return p
+	p := make([]byte, 512)
+	return p
 }
 
 // GetBytesSlicePtr512 is like GetBytesSlice512 but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice512 requires a pointer-sized allocation per call, whereas PutBytesSlicePtr512 does not
 // allocate.
 func GetBytesSlicePtr512() *[]byte {
-    if p := get512(); p != nil {
-        return p
+	if p := get512(); p != nil {
+		return p
 	}
 	if b := getb512(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 512)
-    return &p
+	p := make([]byte, 512)
+	return &p
 }
 
 func GetBufioReader512(pr io.Reader) *bufio.Reader {
 	if r := getr512(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 512)
 }
@@ -304,7 +303,7 @@ func GetBufioReader512(pr io.Reader) *bufio.Reader {
 func GetBufioWriter512(pw io.Writer) *bufio.Writer {
 	if w := getw512(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 512)
 }
@@ -315,15 +314,15 @@ func GetBufioWriter512(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer512 is optimized for bytes.Buffer of capacity [512, 1024) but will accepts other
 // sizes as well.
 func PutBytesBuffer512(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 512 || l >= 1024 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 512 || l >= 1024 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb512(b)
-    return true
+	putb512(b)
+	return true
 }
 
 // PutBytesSlice512 recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -333,53 +332,53 @@ func PutBytesBuffer512(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice512, contrary to PutBytesSlicePtr512, will perform a pointer-sized allocation for each call.
 func PutBytesSlice512(p []byte) bool {
-    if l := cap(p); l < 512 || l >= 1024 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:512]
-    put512(&p)
-    return true
+	if l := cap(p); l < 512 || l >= 1024 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:512]
+	put512(&p)
+	return true
 }
 
-// PutBytesSlicePtr512 is like PutBytesSlice512, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr512 is like PutBytesSlice512, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr512(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 512 || l >= 1024 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:512]
-    put512(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 512 || l >= 1024 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:512]
+	put512(p)
+	return true
 }
 
 func PutBufioReader512(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 512 || l >= 1024 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 512 || l >= 1024 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr512(r)
-    return true
+	putr512(r)
+	return true
 }
 
 func PutBufioWriter512(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 512 || l >= 1024 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 512 || l >= 1024 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw512(w)
-    return true
+	putw512(w)
+	return true
 }
 
-// BufferPool512 is a httputil.BufferPool that provides byte slices of 512 bytes. 
+// BufferPool512 is a httputil.BufferPool that provides byte slices of 512 bytes.
 type BufferPool512 struct {
 	httputil.BufferPool
 }
@@ -396,7 +395,7 @@ func (_ BufferPool512) Put(b []byte) {
 
 // BufferPtrPool512 is like BufferPool512, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool512 struct {}
+type BufferPtrPool512 struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr512 for details.
 func (_ BufferPtrPool512) Get() *[]byte {
@@ -408,30 +407,30 @@ func (_ BufferPtrPool512) Put(b *[]byte) {
 	PutBytesSlicePtr512(b)
 }
 
-var pool1K  sync.Pool // *[]byte, 1024 <= cap < 2048
+var pool1K sync.Pool  // *[]byte, 1024 <= cap < 2048
 var poolb1K sync.Pool // *bytes.Buffer, 1024 <= Cap < 2048
 var poolr1K sync.Pool // *bufio.Reader, 1024 <= Size < 2048
 var poolw1K sync.Pool // *bufio.Writer, 1024 <= Size < 2048
 
 func get1K() *[]byte {
-    p, _ := pool1K.Get().(*[]byte)
-    return p
+	p, _ := pool1K.Get().(*[]byte)
+	return p
 }
 
 func getb1K() *bytes.Buffer {
-    b, _ := poolb1K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb1K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr1K() *bufio.Reader {
-    r, _ := poolr1K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr1K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw1K() *bufio.Writer {
-    w, _ := poolw1K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw1K.Get().(*bufio.Writer)
+	return w
+}
 
 func put1K(b *[]byte) {
 	pool1K.Put(b)
@@ -451,46 +450,46 @@ func putw1K(w *bufio.Writer) {
 
 // GetBytesBuffer1K gets a bytes.Buffer with a capacity of at least 1K bytes.
 func GetBytesBuffer1K() *bytes.Buffer {
-    if b := getb1K(); b != nil {
-        return b
+	if b := getb1K(); b != nil {
+		return b
 	}
 	if p := get1K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 1024))
+	return bytes.NewBuffer(make([]byte, 1024))
 }
 
 // GetBytesSlice1K gets a byte slice with a capacity of at least 1K bytes and length of 1K bytes.
 func GetBytesSlice1K() []byte {
-    if p := get1K(); p != nil {
-        return *p
+	if p := get1K(); p != nil {
+		return *p
 	}
 	if b := getb1K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 1024)
-    return p
+	p := make([]byte, 1024)
+	return p
 }
 
 // GetBytesSlicePtr1K is like GetBytesSlice1K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice1K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr1K does not
 // allocate.
 func GetBytesSlicePtr1K() *[]byte {
-    if p := get1K(); p != nil {
-        return p
+	if p := get1K(); p != nil {
+		return p
 	}
 	if b := getb1K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 1024)
-    return &p
+	p := make([]byte, 1024)
+	return &p
 }
 
 func GetBufioReader1K(pr io.Reader) *bufio.Reader {
 	if r := getr1K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 1024)
 }
@@ -498,7 +497,7 @@ func GetBufioReader1K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter1K(pw io.Writer) *bufio.Writer {
 	if w := getw1K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 1024)
 }
@@ -509,15 +508,15 @@ func GetBufioWriter1K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer1K is optimized for bytes.Buffer of capacity [1024, 2048) but will accepts other
 // sizes as well.
 func PutBytesBuffer1K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 1024 || l >= 2048 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 1024 || l >= 2048 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb1K(b)
-    return true
+	putb1K(b)
+	return true
 }
 
 // PutBytesSlice1K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -527,53 +526,53 @@ func PutBytesBuffer1K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice1K, contrary to PutBytesSlicePtr1K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice1K(p []byte) bool {
-    if l := cap(p); l < 1024 || l >= 2048 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:1024]
-    put1K(&p)
-    return true
+	if l := cap(p); l < 1024 || l >= 2048 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:1024]
+	put1K(&p)
+	return true
 }
 
-// PutBytesSlicePtr1K is like PutBytesSlice1K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr1K is like PutBytesSlice1K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr1K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 1024 || l >= 2048 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:1024]
-    put1K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 1024 || l >= 2048 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:1024]
+	put1K(p)
+	return true
 }
 
 func PutBufioReader1K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 1024 || l >= 2048 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 1024 || l >= 2048 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr1K(r)
-    return true
+	putr1K(r)
+	return true
 }
 
 func PutBufioWriter1K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 1024 || l >= 2048 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 1024 || l >= 2048 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw1K(w)
-    return true
+	putw1K(w)
+	return true
 }
 
-// BufferPool1K is a httputil.BufferPool that provides byte slices of 1K bytes. 
+// BufferPool1K is a httputil.BufferPool that provides byte slices of 1K bytes.
 type BufferPool1K struct {
 	httputil.BufferPool
 }
@@ -590,7 +589,7 @@ func (_ BufferPool1K) Put(b []byte) {
 
 // BufferPtrPool1K is like BufferPool1K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool1K struct {}
+type BufferPtrPool1K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr1K for details.
 func (_ BufferPtrPool1K) Get() *[]byte {
@@ -602,30 +601,30 @@ func (_ BufferPtrPool1K) Put(b *[]byte) {
 	PutBytesSlicePtr1K(b)
 }
 
-var pool2K  sync.Pool // *[]byte, 2048 <= cap < 4096
+var pool2K sync.Pool  // *[]byte, 2048 <= cap < 4096
 var poolb2K sync.Pool // *bytes.Buffer, 2048 <= Cap < 4096
 var poolr2K sync.Pool // *bufio.Reader, 2048 <= Size < 4096
 var poolw2K sync.Pool // *bufio.Writer, 2048 <= Size < 4096
 
 func get2K() *[]byte {
-    p, _ := pool2K.Get().(*[]byte)
-    return p
+	p, _ := pool2K.Get().(*[]byte)
+	return p
 }
 
 func getb2K() *bytes.Buffer {
-    b, _ := poolb2K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb2K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr2K() *bufio.Reader {
-    r, _ := poolr2K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr2K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw2K() *bufio.Writer {
-    w, _ := poolw2K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw2K.Get().(*bufio.Writer)
+	return w
+}
 
 func put2K(b *[]byte) {
 	pool2K.Put(b)
@@ -645,46 +644,46 @@ func putw2K(w *bufio.Writer) {
 
 // GetBytesBuffer2K gets a bytes.Buffer with a capacity of at least 2K bytes.
 func GetBytesBuffer2K() *bytes.Buffer {
-    if b := getb2K(); b != nil {
-        return b
+	if b := getb2K(); b != nil {
+		return b
 	}
 	if p := get2K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 2048))
+	return bytes.NewBuffer(make([]byte, 2048))
 }
 
 // GetBytesSlice2K gets a byte slice with a capacity of at least 2K bytes and length of 2K bytes.
 func GetBytesSlice2K() []byte {
-    if p := get2K(); p != nil {
-        return *p
+	if p := get2K(); p != nil {
+		return *p
 	}
 	if b := getb2K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 2048)
-    return p
+	p := make([]byte, 2048)
+	return p
 }
 
 // GetBytesSlicePtr2K is like GetBytesSlice2K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice2K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr2K does not
 // allocate.
 func GetBytesSlicePtr2K() *[]byte {
-    if p := get2K(); p != nil {
-        return p
+	if p := get2K(); p != nil {
+		return p
 	}
 	if b := getb2K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 2048)
-    return &p
+	p := make([]byte, 2048)
+	return &p
 }
 
 func GetBufioReader2K(pr io.Reader) *bufio.Reader {
 	if r := getr2K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 2048)
 }
@@ -692,7 +691,7 @@ func GetBufioReader2K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter2K(pw io.Writer) *bufio.Writer {
 	if w := getw2K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 2048)
 }
@@ -703,15 +702,15 @@ func GetBufioWriter2K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer2K is optimized for bytes.Buffer of capacity [2048, 4096) but will accepts other
 // sizes as well.
 func PutBytesBuffer2K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 2048 || l >= 4096 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 2048 || l >= 4096 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb2K(b)
-    return true
+	putb2K(b)
+	return true
 }
 
 // PutBytesSlice2K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -721,53 +720,53 @@ func PutBytesBuffer2K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice2K, contrary to PutBytesSlicePtr2K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice2K(p []byte) bool {
-    if l := cap(p); l < 2048 || l >= 4096 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:2048]
-    put2K(&p)
-    return true
+	if l := cap(p); l < 2048 || l >= 4096 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:2048]
+	put2K(&p)
+	return true
 }
 
-// PutBytesSlicePtr2K is like PutBytesSlice2K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr2K is like PutBytesSlice2K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr2K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 2048 || l >= 4096 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:2048]
-    put2K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 2048 || l >= 4096 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:2048]
+	put2K(p)
+	return true
 }
 
 func PutBufioReader2K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 2048 || l >= 4096 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 2048 || l >= 4096 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr2K(r)
-    return true
+	putr2K(r)
+	return true
 }
 
 func PutBufioWriter2K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 2048 || l >= 4096 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 2048 || l >= 4096 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw2K(w)
-    return true
+	putw2K(w)
+	return true
 }
 
-// BufferPool2K is a httputil.BufferPool that provides byte slices of 2K bytes. 
+// BufferPool2K is a httputil.BufferPool that provides byte slices of 2K bytes.
 type BufferPool2K struct {
 	httputil.BufferPool
 }
@@ -784,7 +783,7 @@ func (_ BufferPool2K) Put(b []byte) {
 
 // BufferPtrPool2K is like BufferPool2K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool2K struct {}
+type BufferPtrPool2K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr2K for details.
 func (_ BufferPtrPool2K) Get() *[]byte {
@@ -796,30 +795,30 @@ func (_ BufferPtrPool2K) Put(b *[]byte) {
 	PutBytesSlicePtr2K(b)
 }
 
-var pool4K  sync.Pool // *[]byte, 4096 <= cap < 8192
+var pool4K sync.Pool  // *[]byte, 4096 <= cap < 8192
 var poolb4K sync.Pool // *bytes.Buffer, 4096 <= Cap < 8192
 var poolr4K sync.Pool // *bufio.Reader, 4096 <= Size < 8192
 var poolw4K sync.Pool // *bufio.Writer, 4096 <= Size < 8192
 
 func get4K() *[]byte {
-    p, _ := pool4K.Get().(*[]byte)
-    return p
+	p, _ := pool4K.Get().(*[]byte)
+	return p
 }
 
 func getb4K() *bytes.Buffer {
-    b, _ := poolb4K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb4K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr4K() *bufio.Reader {
-    r, _ := poolr4K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr4K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw4K() *bufio.Writer {
-    w, _ := poolw4K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw4K.Get().(*bufio.Writer)
+	return w
+}
 
 func put4K(b *[]byte) {
 	pool4K.Put(b)
@@ -839,46 +838,46 @@ func putw4K(w *bufio.Writer) {
 
 // GetBytesBuffer4K gets a bytes.Buffer with a capacity of at least 4K bytes.
 func GetBytesBuffer4K() *bytes.Buffer {
-    if b := getb4K(); b != nil {
-        return b
+	if b := getb4K(); b != nil {
+		return b
 	}
 	if p := get4K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 4096))
+	return bytes.NewBuffer(make([]byte, 4096))
 }
 
 // GetBytesSlice4K gets a byte slice with a capacity of at least 4K bytes and length of 4K bytes.
 func GetBytesSlice4K() []byte {
-    if p := get4K(); p != nil {
-        return *p
+	if p := get4K(); p != nil {
+		return *p
 	}
 	if b := getb4K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 4096)
-    return p
+	p := make([]byte, 4096)
+	return p
 }
 
 // GetBytesSlicePtr4K is like GetBytesSlice4K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice4K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr4K does not
 // allocate.
 func GetBytesSlicePtr4K() *[]byte {
-    if p := get4K(); p != nil {
-        return p
+	if p := get4K(); p != nil {
+		return p
 	}
 	if b := getb4K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 4096)
-    return &p
+	p := make([]byte, 4096)
+	return &p
 }
 
 func GetBufioReader4K(pr io.Reader) *bufio.Reader {
 	if r := getr4K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 4096)
 }
@@ -886,7 +885,7 @@ func GetBufioReader4K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter4K(pw io.Writer) *bufio.Writer {
 	if w := getw4K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 4096)
 }
@@ -897,15 +896,15 @@ func GetBufioWriter4K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer4K is optimized for bytes.Buffer of capacity [4096, 8192) but will accepts other
 // sizes as well.
 func PutBytesBuffer4K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 4096 || l >= 8192 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 4096 || l >= 8192 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb4K(b)
-    return true
+	putb4K(b)
+	return true
 }
 
 // PutBytesSlice4K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -915,53 +914,53 @@ func PutBytesBuffer4K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice4K, contrary to PutBytesSlicePtr4K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice4K(p []byte) bool {
-    if l := cap(p); l < 4096 || l >= 8192 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:4096]
-    put4K(&p)
-    return true
+	if l := cap(p); l < 4096 || l >= 8192 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:4096]
+	put4K(&p)
+	return true
 }
 
-// PutBytesSlicePtr4K is like PutBytesSlice4K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr4K is like PutBytesSlice4K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr4K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 4096 || l >= 8192 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:4096]
-    put4K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 4096 || l >= 8192 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:4096]
+	put4K(p)
+	return true
 }
 
 func PutBufioReader4K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 4096 || l >= 8192 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 4096 || l >= 8192 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr4K(r)
-    return true
+	putr4K(r)
+	return true
 }
 
 func PutBufioWriter4K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 4096 || l >= 8192 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 4096 || l >= 8192 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw4K(w)
-    return true
+	putw4K(w)
+	return true
 }
 
-// BufferPool4K is a httputil.BufferPool that provides byte slices of 4K bytes. 
+// BufferPool4K is a httputil.BufferPool that provides byte slices of 4K bytes.
 type BufferPool4K struct {
 	httputil.BufferPool
 }
@@ -978,7 +977,7 @@ func (_ BufferPool4K) Put(b []byte) {
 
 // BufferPtrPool4K is like BufferPool4K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool4K struct {}
+type BufferPtrPool4K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr4K for details.
 func (_ BufferPtrPool4K) Get() *[]byte {
@@ -990,30 +989,30 @@ func (_ BufferPtrPool4K) Put(b *[]byte) {
 	PutBytesSlicePtr4K(b)
 }
 
-var pool8K  sync.Pool // *[]byte, 8192 <= cap < 16384
+var pool8K sync.Pool  // *[]byte, 8192 <= cap < 16384
 var poolb8K sync.Pool // *bytes.Buffer, 8192 <= Cap < 16384
 var poolr8K sync.Pool // *bufio.Reader, 8192 <= Size < 16384
 var poolw8K sync.Pool // *bufio.Writer, 8192 <= Size < 16384
 
 func get8K() *[]byte {
-    p, _ := pool8K.Get().(*[]byte)
-    return p
+	p, _ := pool8K.Get().(*[]byte)
+	return p
 }
 
 func getb8K() *bytes.Buffer {
-    b, _ := poolb8K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb8K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr8K() *bufio.Reader {
-    r, _ := poolr8K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr8K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw8K() *bufio.Writer {
-    w, _ := poolw8K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw8K.Get().(*bufio.Writer)
+	return w
+}
 
 func put8K(b *[]byte) {
 	pool8K.Put(b)
@@ -1033,46 +1032,46 @@ func putw8K(w *bufio.Writer) {
 
 // GetBytesBuffer8K gets a bytes.Buffer with a capacity of at least 8K bytes.
 func GetBytesBuffer8K() *bytes.Buffer {
-    if b := getb8K(); b != nil {
-        return b
+	if b := getb8K(); b != nil {
+		return b
 	}
 	if p := get8K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 8192))
+	return bytes.NewBuffer(make([]byte, 8192))
 }
 
 // GetBytesSlice8K gets a byte slice with a capacity of at least 8K bytes and length of 8K bytes.
 func GetBytesSlice8K() []byte {
-    if p := get8K(); p != nil {
-        return *p
+	if p := get8K(); p != nil {
+		return *p
 	}
 	if b := getb8K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 8192)
-    return p
+	p := make([]byte, 8192)
+	return p
 }
 
 // GetBytesSlicePtr8K is like GetBytesSlice8K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice8K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr8K does not
 // allocate.
 func GetBytesSlicePtr8K() *[]byte {
-    if p := get8K(); p != nil {
-        return p
+	if p := get8K(); p != nil {
+		return p
 	}
 	if b := getb8K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 8192)
-    return &p
+	p := make([]byte, 8192)
+	return &p
 }
 
 func GetBufioReader8K(pr io.Reader) *bufio.Reader {
 	if r := getr8K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 8192)
 }
@@ -1080,7 +1079,7 @@ func GetBufioReader8K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter8K(pw io.Writer) *bufio.Writer {
 	if w := getw8K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 8192)
 }
@@ -1091,15 +1090,15 @@ func GetBufioWriter8K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer8K is optimized for bytes.Buffer of capacity [8192, 16384) but will accepts other
 // sizes as well.
 func PutBytesBuffer8K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 8192 || l >= 16384 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 8192 || l >= 16384 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb8K(b)
-    return true
+	putb8K(b)
+	return true
 }
 
 // PutBytesSlice8K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -1109,53 +1108,53 @@ func PutBytesBuffer8K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice8K, contrary to PutBytesSlicePtr8K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice8K(p []byte) bool {
-    if l := cap(p); l < 8192 || l >= 16384 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:8192]
-    put8K(&p)
-    return true
+	if l := cap(p); l < 8192 || l >= 16384 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:8192]
+	put8K(&p)
+	return true
 }
 
-// PutBytesSlicePtr8K is like PutBytesSlice8K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr8K is like PutBytesSlice8K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr8K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 8192 || l >= 16384 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:8192]
-    put8K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 8192 || l >= 16384 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:8192]
+	put8K(p)
+	return true
 }
 
 func PutBufioReader8K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 8192 || l >= 16384 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 8192 || l >= 16384 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr8K(r)
-    return true
+	putr8K(r)
+	return true
 }
 
 func PutBufioWriter8K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 8192 || l >= 16384 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 8192 || l >= 16384 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw8K(w)
-    return true
+	putw8K(w)
+	return true
 }
 
-// BufferPool8K is a httputil.BufferPool that provides byte slices of 8K bytes. 
+// BufferPool8K is a httputil.BufferPool that provides byte slices of 8K bytes.
 type BufferPool8K struct {
 	httputil.BufferPool
 }
@@ -1172,7 +1171,7 @@ func (_ BufferPool8K) Put(b []byte) {
 
 // BufferPtrPool8K is like BufferPool8K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool8K struct {}
+type BufferPtrPool8K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr8K for details.
 func (_ BufferPtrPool8K) Get() *[]byte {
@@ -1184,30 +1183,30 @@ func (_ BufferPtrPool8K) Put(b *[]byte) {
 	PutBytesSlicePtr8K(b)
 }
 
-var pool16K  sync.Pool // *[]byte, 16384 <= cap < 32768
+var pool16K sync.Pool  // *[]byte, 16384 <= cap < 32768
 var poolb16K sync.Pool // *bytes.Buffer, 16384 <= Cap < 32768
 var poolr16K sync.Pool // *bufio.Reader, 16384 <= Size < 32768
 var poolw16K sync.Pool // *bufio.Writer, 16384 <= Size < 32768
 
 func get16K() *[]byte {
-    p, _ := pool16K.Get().(*[]byte)
-    return p
+	p, _ := pool16K.Get().(*[]byte)
+	return p
 }
 
 func getb16K() *bytes.Buffer {
-    b, _ := poolb16K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb16K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr16K() *bufio.Reader {
-    r, _ := poolr16K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr16K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw16K() *bufio.Writer {
-    w, _ := poolw16K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw16K.Get().(*bufio.Writer)
+	return w
+}
 
 func put16K(b *[]byte) {
 	pool16K.Put(b)
@@ -1227,46 +1226,46 @@ func putw16K(w *bufio.Writer) {
 
 // GetBytesBuffer16K gets a bytes.Buffer with a capacity of at least 16K bytes.
 func GetBytesBuffer16K() *bytes.Buffer {
-    if b := getb16K(); b != nil {
-        return b
+	if b := getb16K(); b != nil {
+		return b
 	}
 	if p := get16K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 16384))
+	return bytes.NewBuffer(make([]byte, 16384))
 }
 
 // GetBytesSlice16K gets a byte slice with a capacity of at least 16K bytes and length of 16K bytes.
 func GetBytesSlice16K() []byte {
-    if p := get16K(); p != nil {
-        return *p
+	if p := get16K(); p != nil {
+		return *p
 	}
 	if b := getb16K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 16384)
-    return p
+	p := make([]byte, 16384)
+	return p
 }
 
 // GetBytesSlicePtr16K is like GetBytesSlice16K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice16K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr16K does not
 // allocate.
 func GetBytesSlicePtr16K() *[]byte {
-    if p := get16K(); p != nil {
-        return p
+	if p := get16K(); p != nil {
+		return p
 	}
 	if b := getb16K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 16384)
-    return &p
+	p := make([]byte, 16384)
+	return &p
 }
 
 func GetBufioReader16K(pr io.Reader) *bufio.Reader {
 	if r := getr16K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 16384)
 }
@@ -1274,7 +1273,7 @@ func GetBufioReader16K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter16K(pw io.Writer) *bufio.Writer {
 	if w := getw16K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 16384)
 }
@@ -1285,15 +1284,15 @@ func GetBufioWriter16K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer16K is optimized for bytes.Buffer of capacity [16384, 32768) but will accepts other
 // sizes as well.
 func PutBytesBuffer16K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 16384 || l >= 32768 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 16384 || l >= 32768 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb16K(b)
-    return true
+	putb16K(b)
+	return true
 }
 
 // PutBytesSlice16K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -1303,53 +1302,53 @@ func PutBytesBuffer16K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice16K, contrary to PutBytesSlicePtr16K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice16K(p []byte) bool {
-    if l := cap(p); l < 16384 || l >= 32768 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:16384]
-    put16K(&p)
-    return true
+	if l := cap(p); l < 16384 || l >= 32768 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:16384]
+	put16K(&p)
+	return true
 }
 
-// PutBytesSlicePtr16K is like PutBytesSlice16K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr16K is like PutBytesSlice16K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr16K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 16384 || l >= 32768 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:16384]
-    put16K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 16384 || l >= 32768 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:16384]
+	put16K(p)
+	return true
 }
 
 func PutBufioReader16K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 16384 || l >= 32768 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 16384 || l >= 32768 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr16K(r)
-    return true
+	putr16K(r)
+	return true
 }
 
 func PutBufioWriter16K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 16384 || l >= 32768 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 16384 || l >= 32768 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw16K(w)
-    return true
+	putw16K(w)
+	return true
 }
 
-// BufferPool16K is a httputil.BufferPool that provides byte slices of 16K bytes. 
+// BufferPool16K is a httputil.BufferPool that provides byte slices of 16K bytes.
 type BufferPool16K struct {
 	httputil.BufferPool
 }
@@ -1366,7 +1365,7 @@ func (_ BufferPool16K) Put(b []byte) {
 
 // BufferPtrPool16K is like BufferPool16K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool16K struct {}
+type BufferPtrPool16K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr16K for details.
 func (_ BufferPtrPool16K) Get() *[]byte {
@@ -1378,30 +1377,30 @@ func (_ BufferPtrPool16K) Put(b *[]byte) {
 	PutBytesSlicePtr16K(b)
 }
 
-var pool32K  sync.Pool // *[]byte, 32768 <= cap < 65536
+var pool32K sync.Pool  // *[]byte, 32768 <= cap < 65536
 var poolb32K sync.Pool // *bytes.Buffer, 32768 <= Cap < 65536
 var poolr32K sync.Pool // *bufio.Reader, 32768 <= Size < 65536
 var poolw32K sync.Pool // *bufio.Writer, 32768 <= Size < 65536
 
 func get32K() *[]byte {
-    p, _ := pool32K.Get().(*[]byte)
-    return p
+	p, _ := pool32K.Get().(*[]byte)
+	return p
 }
 
 func getb32K() *bytes.Buffer {
-    b, _ := poolb32K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb32K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr32K() *bufio.Reader {
-    r, _ := poolr32K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr32K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw32K() *bufio.Writer {
-    w, _ := poolw32K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw32K.Get().(*bufio.Writer)
+	return w
+}
 
 func put32K(b *[]byte) {
 	pool32K.Put(b)
@@ -1421,46 +1420,46 @@ func putw32K(w *bufio.Writer) {
 
 // GetBytesBuffer32K gets a bytes.Buffer with a capacity of at least 32K bytes.
 func GetBytesBuffer32K() *bytes.Buffer {
-    if b := getb32K(); b != nil {
-        return b
+	if b := getb32K(); b != nil {
+		return b
 	}
 	if p := get32K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 32768))
+	return bytes.NewBuffer(make([]byte, 32768))
 }
 
 // GetBytesSlice32K gets a byte slice with a capacity of at least 32K bytes and length of 32K bytes.
 func GetBytesSlice32K() []byte {
-    if p := get32K(); p != nil {
-        return *p
+	if p := get32K(); p != nil {
+		return *p
 	}
 	if b := getb32K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 32768)
-    return p
+	p := make([]byte, 32768)
+	return p
 }
 
 // GetBytesSlicePtr32K is like GetBytesSlice32K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice32K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr32K does not
 // allocate.
 func GetBytesSlicePtr32K() *[]byte {
-    if p := get32K(); p != nil {
-        return p
+	if p := get32K(); p != nil {
+		return p
 	}
 	if b := getb32K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 32768)
-    return &p
+	p := make([]byte, 32768)
+	return &p
 }
 
 func GetBufioReader32K(pr io.Reader) *bufio.Reader {
 	if r := getr32K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 32768)
 }
@@ -1468,7 +1467,7 @@ func GetBufioReader32K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter32K(pw io.Writer) *bufio.Writer {
 	if w := getw32K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 32768)
 }
@@ -1479,15 +1478,15 @@ func GetBufioWriter32K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer32K is optimized for bytes.Buffer of capacity [32768, 65536) but will accepts other
 // sizes as well.
 func PutBytesBuffer32K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 32768 || l >= 65536 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 32768 || l >= 65536 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb32K(b)
-    return true
+	putb32K(b)
+	return true
 }
 
 // PutBytesSlice32K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -1497,53 +1496,53 @@ func PutBytesBuffer32K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice32K, contrary to PutBytesSlicePtr32K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice32K(p []byte) bool {
-    if l := cap(p); l < 32768 || l >= 65536 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:32768]
-    put32K(&p)
-    return true
+	if l := cap(p); l < 32768 || l >= 65536 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:32768]
+	put32K(&p)
+	return true
 }
 
-// PutBytesSlicePtr32K is like PutBytesSlice32K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr32K is like PutBytesSlice32K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr32K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 32768 || l >= 65536 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:32768]
-    put32K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 32768 || l >= 65536 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:32768]
+	put32K(p)
+	return true
 }
 
 func PutBufioReader32K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 32768 || l >= 65536 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 32768 || l >= 65536 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr32K(r)
-    return true
+	putr32K(r)
+	return true
 }
 
 func PutBufioWriter32K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 32768 || l >= 65536 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 32768 || l >= 65536 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw32K(w)
-    return true
+	putw32K(w)
+	return true
 }
 
-// BufferPool32K is a httputil.BufferPool that provides byte slices of 32K bytes. 
+// BufferPool32K is a httputil.BufferPool that provides byte slices of 32K bytes.
 type BufferPool32K struct {
 	httputil.BufferPool
 }
@@ -1560,7 +1559,7 @@ func (_ BufferPool32K) Put(b []byte) {
 
 // BufferPtrPool32K is like BufferPool32K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool32K struct {}
+type BufferPtrPool32K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr32K for details.
 func (_ BufferPtrPool32K) Get() *[]byte {
@@ -1572,30 +1571,30 @@ func (_ BufferPtrPool32K) Put(b *[]byte) {
 	PutBytesSlicePtr32K(b)
 }
 
-var pool64K  sync.Pool // *[]byte, 65536 <= cap < 131072
+var pool64K sync.Pool  // *[]byte, 65536 <= cap < 131072
 var poolb64K sync.Pool // *bytes.Buffer, 65536 <= Cap < 131072
 var poolr64K sync.Pool // *bufio.Reader, 65536 <= Size < 131072
 var poolw64K sync.Pool // *bufio.Writer, 65536 <= Size < 131072
 
 func get64K() *[]byte {
-    p, _ := pool64K.Get().(*[]byte)
-    return p
+	p, _ := pool64K.Get().(*[]byte)
+	return p
 }
 
 func getb64K() *bytes.Buffer {
-    b, _ := poolb64K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb64K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr64K() *bufio.Reader {
-    r, _ := poolr64K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr64K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw64K() *bufio.Writer {
-    w, _ := poolw64K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw64K.Get().(*bufio.Writer)
+	return w
+}
 
 func put64K(b *[]byte) {
 	pool64K.Put(b)
@@ -1615,46 +1614,46 @@ func putw64K(w *bufio.Writer) {
 
 // GetBytesBuffer64K gets a bytes.Buffer with a capacity of at least 64K bytes.
 func GetBytesBuffer64K() *bytes.Buffer {
-    if b := getb64K(); b != nil {
-        return b
+	if b := getb64K(); b != nil {
+		return b
 	}
 	if p := get64K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 65536))
+	return bytes.NewBuffer(make([]byte, 65536))
 }
 
 // GetBytesSlice64K gets a byte slice with a capacity of at least 64K bytes and length of 64K bytes.
 func GetBytesSlice64K() []byte {
-    if p := get64K(); p != nil {
-        return *p
+	if p := get64K(); p != nil {
+		return *p
 	}
 	if b := getb64K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 65536)
-    return p
+	p := make([]byte, 65536)
+	return p
 }
 
 // GetBytesSlicePtr64K is like GetBytesSlice64K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice64K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr64K does not
 // allocate.
 func GetBytesSlicePtr64K() *[]byte {
-    if p := get64K(); p != nil {
-        return p
+	if p := get64K(); p != nil {
+		return p
 	}
 	if b := getb64K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 65536)
-    return &p
+	p := make([]byte, 65536)
+	return &p
 }
 
 func GetBufioReader64K(pr io.Reader) *bufio.Reader {
 	if r := getr64K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 65536)
 }
@@ -1662,7 +1661,7 @@ func GetBufioReader64K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter64K(pw io.Writer) *bufio.Writer {
 	if w := getw64K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 65536)
 }
@@ -1673,15 +1672,15 @@ func GetBufioWriter64K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer64K is optimized for bytes.Buffer of capacity [65536, 131072) but will accepts other
 // sizes as well.
 func PutBytesBuffer64K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 65536 || l >= 131072 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 65536 || l >= 131072 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb64K(b)
-    return true
+	putb64K(b)
+	return true
 }
 
 // PutBytesSlice64K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -1691,53 +1690,53 @@ func PutBytesBuffer64K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice64K, contrary to PutBytesSlicePtr64K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice64K(p []byte) bool {
-    if l := cap(p); l < 65536 || l >= 131072 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:65536]
-    put64K(&p)
-    return true
+	if l := cap(p); l < 65536 || l >= 131072 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:65536]
+	put64K(&p)
+	return true
 }
 
-// PutBytesSlicePtr64K is like PutBytesSlice64K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr64K is like PutBytesSlice64K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr64K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 65536 || l >= 131072 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:65536]
-    put64K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 65536 || l >= 131072 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:65536]
+	put64K(p)
+	return true
 }
 
 func PutBufioReader64K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 65536 || l >= 131072 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 65536 || l >= 131072 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr64K(r)
-    return true
+	putr64K(r)
+	return true
 }
 
 func PutBufioWriter64K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 65536 || l >= 131072 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 65536 || l >= 131072 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw64K(w)
-    return true
+	putw64K(w)
+	return true
 }
 
-// BufferPool64K is a httputil.BufferPool that provides byte slices of 64K bytes. 
+// BufferPool64K is a httputil.BufferPool that provides byte slices of 64K bytes.
 type BufferPool64K struct {
 	httputil.BufferPool
 }
@@ -1754,7 +1753,7 @@ func (_ BufferPool64K) Put(b []byte) {
 
 // BufferPtrPool64K is like BufferPool64K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool64K struct {}
+type BufferPtrPool64K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr64K for details.
 func (_ BufferPtrPool64K) Get() *[]byte {
@@ -1766,30 +1765,30 @@ func (_ BufferPtrPool64K) Put(b *[]byte) {
 	PutBytesSlicePtr64K(b)
 }
 
-var pool128K  sync.Pool // *[]byte, 131072 <= cap < 262144
+var pool128K sync.Pool  // *[]byte, 131072 <= cap < 262144
 var poolb128K sync.Pool // *bytes.Buffer, 131072 <= Cap < 262144
 var poolr128K sync.Pool // *bufio.Reader, 131072 <= Size < 262144
 var poolw128K sync.Pool // *bufio.Writer, 131072 <= Size < 262144
 
 func get128K() *[]byte {
-    p, _ := pool128K.Get().(*[]byte)
-    return p
+	p, _ := pool128K.Get().(*[]byte)
+	return p
 }
 
 func getb128K() *bytes.Buffer {
-    b, _ := poolb128K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb128K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr128K() *bufio.Reader {
-    r, _ := poolr128K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr128K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw128K() *bufio.Writer {
-    w, _ := poolw128K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw128K.Get().(*bufio.Writer)
+	return w
+}
 
 func put128K(b *[]byte) {
 	pool128K.Put(b)
@@ -1809,46 +1808,46 @@ func putw128K(w *bufio.Writer) {
 
 // GetBytesBuffer128K gets a bytes.Buffer with a capacity of at least 128K bytes.
 func GetBytesBuffer128K() *bytes.Buffer {
-    if b := getb128K(); b != nil {
-        return b
+	if b := getb128K(); b != nil {
+		return b
 	}
 	if p := get128K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 131072))
+	return bytes.NewBuffer(make([]byte, 131072))
 }
 
 // GetBytesSlice128K gets a byte slice with a capacity of at least 128K bytes and length of 128K bytes.
 func GetBytesSlice128K() []byte {
-    if p := get128K(); p != nil {
-        return *p
+	if p := get128K(); p != nil {
+		return *p
 	}
 	if b := getb128K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 131072)
-    return p
+	p := make([]byte, 131072)
+	return p
 }
 
 // GetBytesSlicePtr128K is like GetBytesSlice128K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice128K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr128K does not
 // allocate.
 func GetBytesSlicePtr128K() *[]byte {
-    if p := get128K(); p != nil {
-        return p
+	if p := get128K(); p != nil {
+		return p
 	}
 	if b := getb128K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 131072)
-    return &p
+	p := make([]byte, 131072)
+	return &p
 }
 
 func GetBufioReader128K(pr io.Reader) *bufio.Reader {
 	if r := getr128K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 131072)
 }
@@ -1856,7 +1855,7 @@ func GetBufioReader128K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter128K(pw io.Writer) *bufio.Writer {
 	if w := getw128K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 131072)
 }
@@ -1867,15 +1866,15 @@ func GetBufioWriter128K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer128K is optimized for bytes.Buffer of capacity [131072, 262144) but will accepts other
 // sizes as well.
 func PutBytesBuffer128K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 131072 || l >= 262144 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 131072 || l >= 262144 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb128K(b)
-    return true
+	putb128K(b)
+	return true
 }
 
 // PutBytesSlice128K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -1885,53 +1884,53 @@ func PutBytesBuffer128K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice128K, contrary to PutBytesSlicePtr128K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice128K(p []byte) bool {
-    if l := cap(p); l < 131072 || l >= 262144 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:131072]
-    put128K(&p)
-    return true
+	if l := cap(p); l < 131072 || l >= 262144 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:131072]
+	put128K(&p)
+	return true
 }
 
-// PutBytesSlicePtr128K is like PutBytesSlice128K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr128K is like PutBytesSlice128K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr128K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 131072 || l >= 262144 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:131072]
-    put128K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 131072 || l >= 262144 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:131072]
+	put128K(p)
+	return true
 }
 
 func PutBufioReader128K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 131072 || l >= 262144 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 131072 || l >= 262144 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr128K(r)
-    return true
+	putr128K(r)
+	return true
 }
 
 func PutBufioWriter128K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 131072 || l >= 262144 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 131072 || l >= 262144 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw128K(w)
-    return true
+	putw128K(w)
+	return true
 }
 
-// BufferPool128K is a httputil.BufferPool that provides byte slices of 128K bytes. 
+// BufferPool128K is a httputil.BufferPool that provides byte slices of 128K bytes.
 type BufferPool128K struct {
 	httputil.BufferPool
 }
@@ -1948,7 +1947,7 @@ func (_ BufferPool128K) Put(b []byte) {
 
 // BufferPtrPool128K is like BufferPool128K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool128K struct {}
+type BufferPtrPool128K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr128K for details.
 func (_ BufferPtrPool128K) Get() *[]byte {
@@ -1960,30 +1959,30 @@ func (_ BufferPtrPool128K) Put(b *[]byte) {
 	PutBytesSlicePtr128K(b)
 }
 
-var pool256K  sync.Pool // *[]byte, 262144 <= cap < 524288
+var pool256K sync.Pool  // *[]byte, 262144 <= cap < 524288
 var poolb256K sync.Pool // *bytes.Buffer, 262144 <= Cap < 524288
 var poolr256K sync.Pool // *bufio.Reader, 262144 <= Size < 524288
 var poolw256K sync.Pool // *bufio.Writer, 262144 <= Size < 524288
 
 func get256K() *[]byte {
-    p, _ := pool256K.Get().(*[]byte)
-    return p
+	p, _ := pool256K.Get().(*[]byte)
+	return p
 }
 
 func getb256K() *bytes.Buffer {
-    b, _ := poolb256K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb256K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr256K() *bufio.Reader {
-    r, _ := poolr256K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr256K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw256K() *bufio.Writer {
-    w, _ := poolw256K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw256K.Get().(*bufio.Writer)
+	return w
+}
 
 func put256K(b *[]byte) {
 	pool256K.Put(b)
@@ -2003,46 +2002,46 @@ func putw256K(w *bufio.Writer) {
 
 // GetBytesBuffer256K gets a bytes.Buffer with a capacity of at least 256K bytes.
 func GetBytesBuffer256K() *bytes.Buffer {
-    if b := getb256K(); b != nil {
-        return b
+	if b := getb256K(); b != nil {
+		return b
 	}
 	if p := get256K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 262144))
+	return bytes.NewBuffer(make([]byte, 262144))
 }
 
 // GetBytesSlice256K gets a byte slice with a capacity of at least 256K bytes and length of 256K bytes.
 func GetBytesSlice256K() []byte {
-    if p := get256K(); p != nil {
-        return *p
+	if p := get256K(); p != nil {
+		return *p
 	}
 	if b := getb256K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 262144)
-    return p
+	p := make([]byte, 262144)
+	return p
 }
 
 // GetBytesSlicePtr256K is like GetBytesSlice256K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice256K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr256K does not
 // allocate.
 func GetBytesSlicePtr256K() *[]byte {
-    if p := get256K(); p != nil {
-        return p
+	if p := get256K(); p != nil {
+		return p
 	}
 	if b := getb256K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 262144)
-    return &p
+	p := make([]byte, 262144)
+	return &p
 }
 
 func GetBufioReader256K(pr io.Reader) *bufio.Reader {
 	if r := getr256K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 262144)
 }
@@ -2050,7 +2049,7 @@ func GetBufioReader256K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter256K(pw io.Writer) *bufio.Writer {
 	if w := getw256K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 262144)
 }
@@ -2061,15 +2060,15 @@ func GetBufioWriter256K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer256K is optimized for bytes.Buffer of capacity [262144, 524288) but will accepts other
 // sizes as well.
 func PutBytesBuffer256K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 262144 || l >= 524288 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 262144 || l >= 524288 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb256K(b)
-    return true
+	putb256K(b)
+	return true
 }
 
 // PutBytesSlice256K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -2079,53 +2078,53 @@ func PutBytesBuffer256K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice256K, contrary to PutBytesSlicePtr256K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice256K(p []byte) bool {
-    if l := cap(p); l < 262144 || l >= 524288 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:262144]
-    put256K(&p)
-    return true
+	if l := cap(p); l < 262144 || l >= 524288 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:262144]
+	put256K(&p)
+	return true
 }
 
-// PutBytesSlicePtr256K is like PutBytesSlice256K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr256K is like PutBytesSlice256K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr256K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 262144 || l >= 524288 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:262144]
-    put256K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 262144 || l >= 524288 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:262144]
+	put256K(p)
+	return true
 }
 
 func PutBufioReader256K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 262144 || l >= 524288 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 262144 || l >= 524288 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr256K(r)
-    return true
+	putr256K(r)
+	return true
 }
 
 func PutBufioWriter256K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 262144 || l >= 524288 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 262144 || l >= 524288 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw256K(w)
-    return true
+	putw256K(w)
+	return true
 }
 
-// BufferPool256K is a httputil.BufferPool that provides byte slices of 256K bytes. 
+// BufferPool256K is a httputil.BufferPool that provides byte slices of 256K bytes.
 type BufferPool256K struct {
 	httputil.BufferPool
 }
@@ -2142,7 +2141,7 @@ func (_ BufferPool256K) Put(b []byte) {
 
 // BufferPtrPool256K is like BufferPool256K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool256K struct {}
+type BufferPtrPool256K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr256K for details.
 func (_ BufferPtrPool256K) Get() *[]byte {
@@ -2154,30 +2153,30 @@ func (_ BufferPtrPool256K) Put(b *[]byte) {
 	PutBytesSlicePtr256K(b)
 }
 
-var pool512K  sync.Pool // *[]byte, 524288 <= cap < 1048576
+var pool512K sync.Pool  // *[]byte, 524288 <= cap < 1048576
 var poolb512K sync.Pool // *bytes.Buffer, 524288 <= Cap < 1048576
 var poolr512K sync.Pool // *bufio.Reader, 524288 <= Size < 1048576
 var poolw512K sync.Pool // *bufio.Writer, 524288 <= Size < 1048576
 
 func get512K() *[]byte {
-    p, _ := pool512K.Get().(*[]byte)
-    return p
+	p, _ := pool512K.Get().(*[]byte)
+	return p
 }
 
 func getb512K() *bytes.Buffer {
-    b, _ := poolb512K.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb512K.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr512K() *bufio.Reader {
-    r, _ := poolr512K.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr512K.Get().(*bufio.Reader)
+	return r
+}
 
 func getw512K() *bufio.Writer {
-    w, _ := poolw512K.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw512K.Get().(*bufio.Writer)
+	return w
+}
 
 func put512K(b *[]byte) {
 	pool512K.Put(b)
@@ -2197,46 +2196,46 @@ func putw512K(w *bufio.Writer) {
 
 // GetBytesBuffer512K gets a bytes.Buffer with a capacity of at least 512K bytes.
 func GetBytesBuffer512K() *bytes.Buffer {
-    if b := getb512K(); b != nil {
-        return b
+	if b := getb512K(); b != nil {
+		return b
 	}
 	if p := get512K(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 524288))
+	return bytes.NewBuffer(make([]byte, 524288))
 }
 
 // GetBytesSlice512K gets a byte slice with a capacity of at least 512K bytes and length of 512K bytes.
 func GetBytesSlice512K() []byte {
-    if p := get512K(); p != nil {
-        return *p
+	if p := get512K(); p != nil {
+		return *p
 	}
 	if b := getb512K(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 524288)
-    return p
+	p := make([]byte, 524288)
+	return p
 }
 
 // GetBytesSlicePtr512K is like GetBytesSlice512K but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice512K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr512K does not
 // allocate.
 func GetBytesSlicePtr512K() *[]byte {
-    if p := get512K(); p != nil {
-        return p
+	if p := get512K(); p != nil {
+		return p
 	}
 	if b := getb512K(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 524288)
-    return &p
+	p := make([]byte, 524288)
+	return &p
 }
 
 func GetBufioReader512K(pr io.Reader) *bufio.Reader {
 	if r := getr512K(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 524288)
 }
@@ -2244,7 +2243,7 @@ func GetBufioReader512K(pr io.Reader) *bufio.Reader {
 func GetBufioWriter512K(pw io.Writer) *bufio.Writer {
 	if w := getw512K(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 524288)
 }
@@ -2255,15 +2254,15 @@ func GetBufioWriter512K(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer512K is optimized for bytes.Buffer of capacity [524288, 1048576) but will accepts other
 // sizes as well.
 func PutBytesBuffer512K(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 524288 || l >= 1048576 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 524288 || l >= 1048576 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb512K(b)
-    return true
+	putb512K(b)
+	return true
 }
 
 // PutBytesSlice512K recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -2273,53 +2272,53 @@ func PutBytesBuffer512K(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice512K, contrary to PutBytesSlicePtr512K, will perform a pointer-sized allocation for each call.
 func PutBytesSlice512K(p []byte) bool {
-    if l := cap(p); l < 524288 || l >= 1048576 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:524288]
-    put512K(&p)
-    return true
+	if l := cap(p); l < 524288 || l >= 1048576 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:524288]
+	put512K(&p)
+	return true
 }
 
-// PutBytesSlicePtr512K is like PutBytesSlice512K, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr512K is like PutBytesSlice512K, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr512K(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 524288 || l >= 1048576 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:524288]
-    put512K(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 524288 || l >= 1048576 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:524288]
+	put512K(p)
+	return true
 }
 
 func PutBufioReader512K(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 524288 || l >= 1048576 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 524288 || l >= 1048576 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr512K(r)
-    return true
+	putr512K(r)
+	return true
 }
 
 func PutBufioWriter512K(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 524288 || l >= 1048576 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 524288 || l >= 1048576 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw512K(w)
-    return true
+	putw512K(w)
+	return true
 }
 
-// BufferPool512K is a httputil.BufferPool that provides byte slices of 512K bytes. 
+// BufferPool512K is a httputil.BufferPool that provides byte slices of 512K bytes.
 type BufferPool512K struct {
 	httputil.BufferPool
 }
@@ -2336,7 +2335,7 @@ func (_ BufferPool512K) Put(b []byte) {
 
 // BufferPtrPool512K is like BufferPool512K, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool512K struct {}
+type BufferPtrPool512K struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr512K for details.
 func (_ BufferPtrPool512K) Get() *[]byte {
@@ -2348,30 +2347,30 @@ func (_ BufferPtrPool512K) Put(b *[]byte) {
 	PutBytesSlicePtr512K(b)
 }
 
-var pool1M  sync.Pool // *[]byte, 1048576 <= cap < 2097152
+var pool1M sync.Pool  // *[]byte, 1048576 <= cap < 2097152
 var poolb1M sync.Pool // *bytes.Buffer, 1048576 <= Cap < 2097152
 var poolr1M sync.Pool // *bufio.Reader, 1048576 <= Size < 2097152
 var poolw1M sync.Pool // *bufio.Writer, 1048576 <= Size < 2097152
 
 func get1M() *[]byte {
-    p, _ := pool1M.Get().(*[]byte)
-    return p
+	p, _ := pool1M.Get().(*[]byte)
+	return p
 }
 
 func getb1M() *bytes.Buffer {
-    b, _ := poolb1M.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb1M.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr1M() *bufio.Reader {
-    r, _ := poolr1M.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr1M.Get().(*bufio.Reader)
+	return r
+}
 
 func getw1M() *bufio.Writer {
-    w, _ := poolw1M.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw1M.Get().(*bufio.Writer)
+	return w
+}
 
 func put1M(b *[]byte) {
 	pool1M.Put(b)
@@ -2391,46 +2390,46 @@ func putw1M(w *bufio.Writer) {
 
 // GetBytesBuffer1M gets a bytes.Buffer with a capacity of at least 1M bytes.
 func GetBytesBuffer1M() *bytes.Buffer {
-    if b := getb1M(); b != nil {
-        return b
+	if b := getb1M(); b != nil {
+		return b
 	}
 	if p := get1M(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 1048576))
+	return bytes.NewBuffer(make([]byte, 1048576))
 }
 
 // GetBytesSlice1M gets a byte slice with a capacity of at least 1M bytes and length of 1M bytes.
 func GetBytesSlice1M() []byte {
-    if p := get1M(); p != nil {
-        return *p
+	if p := get1M(); p != nil {
+		return *p
 	}
 	if b := getb1M(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 1048576)
-    return p
+	p := make([]byte, 1048576)
+	return p
 }
 
 // GetBytesSlicePtr1M is like GetBytesSlice1M but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice1M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr1M does not
 // allocate.
 func GetBytesSlicePtr1M() *[]byte {
-    if p := get1M(); p != nil {
-        return p
+	if p := get1M(); p != nil {
+		return p
 	}
 	if b := getb1M(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 1048576)
-    return &p
+	p := make([]byte, 1048576)
+	return &p
 }
 
 func GetBufioReader1M(pr io.Reader) *bufio.Reader {
 	if r := getr1M(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 1048576)
 }
@@ -2438,7 +2437,7 @@ func GetBufioReader1M(pr io.Reader) *bufio.Reader {
 func GetBufioWriter1M(pw io.Writer) *bufio.Writer {
 	if w := getw1M(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 1048576)
 }
@@ -2449,15 +2448,15 @@ func GetBufioWriter1M(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer1M is optimized for bytes.Buffer of capacity [1048576, 2097152) but will accepts other
 // sizes as well.
 func PutBytesBuffer1M(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 1048576 || l >= 2097152 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 1048576 || l >= 2097152 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb1M(b)
-    return true
+	putb1M(b)
+	return true
 }
 
 // PutBytesSlice1M recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -2467,53 +2466,53 @@ func PutBytesBuffer1M(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice1M, contrary to PutBytesSlicePtr1M, will perform a pointer-sized allocation for each call.
 func PutBytesSlice1M(p []byte) bool {
-    if l := cap(p); l < 1048576 || l >= 2097152 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:1048576]
-    put1M(&p)
-    return true
+	if l := cap(p); l < 1048576 || l >= 2097152 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:1048576]
+	put1M(&p)
+	return true
 }
 
-// PutBytesSlicePtr1M is like PutBytesSlice1M, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr1M is like PutBytesSlice1M, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr1M(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 1048576 || l >= 2097152 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:1048576]
-    put1M(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 1048576 || l >= 2097152 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:1048576]
+	put1M(p)
+	return true
 }
 
 func PutBufioReader1M(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 1048576 || l >= 2097152 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 1048576 || l >= 2097152 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr1M(r)
-    return true
+	putr1M(r)
+	return true
 }
 
 func PutBufioWriter1M(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 1048576 || l >= 2097152 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 1048576 || l >= 2097152 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw1M(w)
-    return true
+	putw1M(w)
+	return true
 }
 
-// BufferPool1M is a httputil.BufferPool that provides byte slices of 1M bytes. 
+// BufferPool1M is a httputil.BufferPool that provides byte slices of 1M bytes.
 type BufferPool1M struct {
 	httputil.BufferPool
 }
@@ -2530,7 +2529,7 @@ func (_ BufferPool1M) Put(b []byte) {
 
 // BufferPtrPool1M is like BufferPool1M, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool1M struct {}
+type BufferPtrPool1M struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr1M for details.
 func (_ BufferPtrPool1M) Get() *[]byte {
@@ -2542,30 +2541,30 @@ func (_ BufferPtrPool1M) Put(b *[]byte) {
 	PutBytesSlicePtr1M(b)
 }
 
-var pool2M  sync.Pool // *[]byte, 2097152 <= cap < 4194304
+var pool2M sync.Pool  // *[]byte, 2097152 <= cap < 4194304
 var poolb2M sync.Pool // *bytes.Buffer, 2097152 <= Cap < 4194304
 var poolr2M sync.Pool // *bufio.Reader, 2097152 <= Size < 4194304
 var poolw2M sync.Pool // *bufio.Writer, 2097152 <= Size < 4194304
 
 func get2M() *[]byte {
-    p, _ := pool2M.Get().(*[]byte)
-    return p
+	p, _ := pool2M.Get().(*[]byte)
+	return p
 }
 
 func getb2M() *bytes.Buffer {
-    b, _ := poolb2M.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb2M.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr2M() *bufio.Reader {
-    r, _ := poolr2M.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr2M.Get().(*bufio.Reader)
+	return r
+}
 
 func getw2M() *bufio.Writer {
-    w, _ := poolw2M.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw2M.Get().(*bufio.Writer)
+	return w
+}
 
 func put2M(b *[]byte) {
 	pool2M.Put(b)
@@ -2585,46 +2584,46 @@ func putw2M(w *bufio.Writer) {
 
 // GetBytesBuffer2M gets a bytes.Buffer with a capacity of at least 2M bytes.
 func GetBytesBuffer2M() *bytes.Buffer {
-    if b := getb2M(); b != nil {
-        return b
+	if b := getb2M(); b != nil {
+		return b
 	}
 	if p := get2M(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 2097152))
+	return bytes.NewBuffer(make([]byte, 2097152))
 }
 
 // GetBytesSlice2M gets a byte slice with a capacity of at least 2M bytes and length of 2M bytes.
 func GetBytesSlice2M() []byte {
-    if p := get2M(); p != nil {
-        return *p
+	if p := get2M(); p != nil {
+		return *p
 	}
 	if b := getb2M(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 2097152)
-    return p
+	p := make([]byte, 2097152)
+	return p
 }
 
 // GetBytesSlicePtr2M is like GetBytesSlice2M but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice2M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr2M does not
 // allocate.
 func GetBytesSlicePtr2M() *[]byte {
-    if p := get2M(); p != nil {
-        return p
+	if p := get2M(); p != nil {
+		return p
 	}
 	if b := getb2M(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 2097152)
-    return &p
+	p := make([]byte, 2097152)
+	return &p
 }
 
 func GetBufioReader2M(pr io.Reader) *bufio.Reader {
 	if r := getr2M(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 2097152)
 }
@@ -2632,7 +2631,7 @@ func GetBufioReader2M(pr io.Reader) *bufio.Reader {
 func GetBufioWriter2M(pw io.Writer) *bufio.Writer {
 	if w := getw2M(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 2097152)
 }
@@ -2643,15 +2642,15 @@ func GetBufioWriter2M(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer2M is optimized for bytes.Buffer of capacity [2097152, 4194304) but will accepts other
 // sizes as well.
 func PutBytesBuffer2M(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 2097152 || l >= 4194304 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 2097152 || l >= 4194304 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb2M(b)
-    return true
+	putb2M(b)
+	return true
 }
 
 // PutBytesSlice2M recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -2661,53 +2660,53 @@ func PutBytesBuffer2M(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice2M, contrary to PutBytesSlicePtr2M, will perform a pointer-sized allocation for each call.
 func PutBytesSlice2M(p []byte) bool {
-    if l := cap(p); l < 2097152 || l >= 4194304 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:2097152]
-    put2M(&p)
-    return true
+	if l := cap(p); l < 2097152 || l >= 4194304 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:2097152]
+	put2M(&p)
+	return true
 }
 
-// PutBytesSlicePtr2M is like PutBytesSlice2M, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr2M is like PutBytesSlice2M, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr2M(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 2097152 || l >= 4194304 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:2097152]
-    put2M(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 2097152 || l >= 4194304 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:2097152]
+	put2M(p)
+	return true
 }
 
 func PutBufioReader2M(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 2097152 || l >= 4194304 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 2097152 || l >= 4194304 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr2M(r)
-    return true
+	putr2M(r)
+	return true
 }
 
 func PutBufioWriter2M(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 2097152 || l >= 4194304 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 2097152 || l >= 4194304 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw2M(w)
-    return true
+	putw2M(w)
+	return true
 }
 
-// BufferPool2M is a httputil.BufferPool that provides byte slices of 2M bytes. 
+// BufferPool2M is a httputil.BufferPool that provides byte slices of 2M bytes.
 type BufferPool2M struct {
 	httputil.BufferPool
 }
@@ -2724,7 +2723,7 @@ func (_ BufferPool2M) Put(b []byte) {
 
 // BufferPtrPool2M is like BufferPool2M, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool2M struct {}
+type BufferPtrPool2M struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr2M for details.
 func (_ BufferPtrPool2M) Get() *[]byte {
@@ -2736,30 +2735,30 @@ func (_ BufferPtrPool2M) Put(b *[]byte) {
 	PutBytesSlicePtr2M(b)
 }
 
-var pool4M  sync.Pool // *[]byte, 4194304 <= cap < 8388608
+var pool4M sync.Pool  // *[]byte, 4194304 <= cap < 8388608
 var poolb4M sync.Pool // *bytes.Buffer, 4194304 <= Cap < 8388608
 var poolr4M sync.Pool // *bufio.Reader, 4194304 <= Size < 8388608
 var poolw4M sync.Pool // *bufio.Writer, 4194304 <= Size < 8388608
 
 func get4M() *[]byte {
-    p, _ := pool4M.Get().(*[]byte)
-    return p
+	p, _ := pool4M.Get().(*[]byte)
+	return p
 }
 
 func getb4M() *bytes.Buffer {
-    b, _ := poolb4M.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb4M.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr4M() *bufio.Reader {
-    r, _ := poolr4M.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr4M.Get().(*bufio.Reader)
+	return r
+}
 
 func getw4M() *bufio.Writer {
-    w, _ := poolw4M.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw4M.Get().(*bufio.Writer)
+	return w
+}
 
 func put4M(b *[]byte) {
 	pool4M.Put(b)
@@ -2779,46 +2778,46 @@ func putw4M(w *bufio.Writer) {
 
 // GetBytesBuffer4M gets a bytes.Buffer with a capacity of at least 4M bytes.
 func GetBytesBuffer4M() *bytes.Buffer {
-    if b := getb4M(); b != nil {
-        return b
+	if b := getb4M(); b != nil {
+		return b
 	}
 	if p := get4M(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 4194304))
+	return bytes.NewBuffer(make([]byte, 4194304))
 }
 
 // GetBytesSlice4M gets a byte slice with a capacity of at least 4M bytes and length of 4M bytes.
 func GetBytesSlice4M() []byte {
-    if p := get4M(); p != nil {
-        return *p
+	if p := get4M(); p != nil {
+		return *p
 	}
 	if b := getb4M(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 4194304)
-    return p
+	p := make([]byte, 4194304)
+	return p
 }
 
 // GetBytesSlicePtr4M is like GetBytesSlice4M but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice4M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr4M does not
 // allocate.
 func GetBytesSlicePtr4M() *[]byte {
-    if p := get4M(); p != nil {
-        return p
+	if p := get4M(); p != nil {
+		return p
 	}
 	if b := getb4M(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 4194304)
-    return &p
+	p := make([]byte, 4194304)
+	return &p
 }
 
 func GetBufioReader4M(pr io.Reader) *bufio.Reader {
 	if r := getr4M(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 4194304)
 }
@@ -2826,7 +2825,7 @@ func GetBufioReader4M(pr io.Reader) *bufio.Reader {
 func GetBufioWriter4M(pw io.Writer) *bufio.Writer {
 	if w := getw4M(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 4194304)
 }
@@ -2837,15 +2836,15 @@ func GetBufioWriter4M(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer4M is optimized for bytes.Buffer of capacity [4194304, 8388608) but will accepts other
 // sizes as well.
 func PutBytesBuffer4M(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 4194304 || l >= 8388608 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 4194304 || l >= 8388608 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb4M(b)
-    return true
+	putb4M(b)
+	return true
 }
 
 // PutBytesSlice4M recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -2855,53 +2854,53 @@ func PutBytesBuffer4M(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice4M, contrary to PutBytesSlicePtr4M, will perform a pointer-sized allocation for each call.
 func PutBytesSlice4M(p []byte) bool {
-    if l := cap(p); l < 4194304 || l >= 8388608 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:4194304]
-    put4M(&p)
-    return true
+	if l := cap(p); l < 4194304 || l >= 8388608 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:4194304]
+	put4M(&p)
+	return true
 }
 
-// PutBytesSlicePtr4M is like PutBytesSlice4M, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr4M is like PutBytesSlice4M, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr4M(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 4194304 || l >= 8388608 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:4194304]
-    put4M(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 4194304 || l >= 8388608 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:4194304]
+	put4M(p)
+	return true
 }
 
 func PutBufioReader4M(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 4194304 || l >= 8388608 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 4194304 || l >= 8388608 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr4M(r)
-    return true
+	putr4M(r)
+	return true
 }
 
 func PutBufioWriter4M(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 4194304 || l >= 8388608 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 4194304 || l >= 8388608 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw4M(w)
-    return true
+	putw4M(w)
+	return true
 }
 
-// BufferPool4M is a httputil.BufferPool that provides byte slices of 4M bytes. 
+// BufferPool4M is a httputil.BufferPool that provides byte slices of 4M bytes.
 type BufferPool4M struct {
 	httputil.BufferPool
 }
@@ -2918,7 +2917,7 @@ func (_ BufferPool4M) Put(b []byte) {
 
 // BufferPtrPool4M is like BufferPool4M, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool4M struct {}
+type BufferPtrPool4M struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr4M for details.
 func (_ BufferPtrPool4M) Get() *[]byte {
@@ -2930,30 +2929,30 @@ func (_ BufferPtrPool4M) Put(b *[]byte) {
 	PutBytesSlicePtr4M(b)
 }
 
-var pool8M  sync.Pool // *[]byte, 8388608 <= cap < 16777216
+var pool8M sync.Pool  // *[]byte, 8388608 <= cap < 16777216
 var poolb8M sync.Pool // *bytes.Buffer, 8388608 <= Cap < 16777216
 var poolr8M sync.Pool // *bufio.Reader, 8388608 <= Size < 16777216
 var poolw8M sync.Pool // *bufio.Writer, 8388608 <= Size < 16777216
 
 func get8M() *[]byte {
-    p, _ := pool8M.Get().(*[]byte)
-    return p
+	p, _ := pool8M.Get().(*[]byte)
+	return p
 }
 
 func getb8M() *bytes.Buffer {
-    b, _ := poolb8M.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb8M.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr8M() *bufio.Reader {
-    r, _ := poolr8M.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr8M.Get().(*bufio.Reader)
+	return r
+}
 
 func getw8M() *bufio.Writer {
-    w, _ := poolw8M.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw8M.Get().(*bufio.Writer)
+	return w
+}
 
 func put8M(b *[]byte) {
 	pool8M.Put(b)
@@ -2973,46 +2972,46 @@ func putw8M(w *bufio.Writer) {
 
 // GetBytesBuffer8M gets a bytes.Buffer with a capacity of at least 8M bytes.
 func GetBytesBuffer8M() *bytes.Buffer {
-    if b := getb8M(); b != nil {
-        return b
+	if b := getb8M(); b != nil {
+		return b
 	}
 	if p := get8M(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 8388608))
+	return bytes.NewBuffer(make([]byte, 8388608))
 }
 
 // GetBytesSlice8M gets a byte slice with a capacity of at least 8M bytes and length of 8M bytes.
 func GetBytesSlice8M() []byte {
-    if p := get8M(); p != nil {
-        return *p
+	if p := get8M(); p != nil {
+		return *p
 	}
 	if b := getb8M(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 8388608)
-    return p
+	p := make([]byte, 8388608)
+	return p
 }
 
 // GetBytesSlicePtr8M is like GetBytesSlice8M but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice8M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr8M does not
 // allocate.
 func GetBytesSlicePtr8M() *[]byte {
-    if p := get8M(); p != nil {
-        return p
+	if p := get8M(); p != nil {
+		return p
 	}
 	if b := getb8M(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 8388608)
-    return &p
+	p := make([]byte, 8388608)
+	return &p
 }
 
 func GetBufioReader8M(pr io.Reader) *bufio.Reader {
 	if r := getr8M(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 8388608)
 }
@@ -3020,7 +3019,7 @@ func GetBufioReader8M(pr io.Reader) *bufio.Reader {
 func GetBufioWriter8M(pw io.Writer) *bufio.Writer {
 	if w := getw8M(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 8388608)
 }
@@ -3031,15 +3030,15 @@ func GetBufioWriter8M(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer8M is optimized for bytes.Buffer of capacity [8388608, 16777216) but will accepts other
 // sizes as well.
 func PutBytesBuffer8M(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 8388608 || l >= 16777216 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 8388608 || l >= 16777216 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb8M(b)
-    return true
+	putb8M(b)
+	return true
 }
 
 // PutBytesSlice8M recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -3049,53 +3048,53 @@ func PutBytesBuffer8M(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice8M, contrary to PutBytesSlicePtr8M, will perform a pointer-sized allocation for each call.
 func PutBytesSlice8M(p []byte) bool {
-    if l := cap(p); l < 8388608 || l >= 16777216 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:8388608]
-    put8M(&p)
-    return true
+	if l := cap(p); l < 8388608 || l >= 16777216 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:8388608]
+	put8M(&p)
+	return true
 }
 
-// PutBytesSlicePtr8M is like PutBytesSlice8M, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr8M is like PutBytesSlice8M, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr8M(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 8388608 || l >= 16777216 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:8388608]
-    put8M(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 8388608 || l >= 16777216 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:8388608]
+	put8M(p)
+	return true
 }
 
 func PutBufioReader8M(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 8388608 || l >= 16777216 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 8388608 || l >= 16777216 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr8M(r)
-    return true
+	putr8M(r)
+	return true
 }
 
 func PutBufioWriter8M(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 8388608 || l >= 16777216 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 8388608 || l >= 16777216 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw8M(w)
-    return true
+	putw8M(w)
+	return true
 }
 
-// BufferPool8M is a httputil.BufferPool that provides byte slices of 8M bytes. 
+// BufferPool8M is a httputil.BufferPool that provides byte slices of 8M bytes.
 type BufferPool8M struct {
 	httputil.BufferPool
 }
@@ -3112,7 +3111,7 @@ func (_ BufferPool8M) Put(b []byte) {
 
 // BufferPtrPool8M is like BufferPool8M, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool8M struct {}
+type BufferPtrPool8M struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr8M for details.
 func (_ BufferPtrPool8M) Get() *[]byte {
@@ -3124,30 +3123,30 @@ func (_ BufferPtrPool8M) Put(b *[]byte) {
 	PutBytesSlicePtr8M(b)
 }
 
-var pool16M  sync.Pool // *[]byte, 16777216 <= cap < 33554432
+var pool16M sync.Pool  // *[]byte, 16777216 <= cap < 33554432
 var poolb16M sync.Pool // *bytes.Buffer, 16777216 <= Cap < 33554432
 var poolr16M sync.Pool // *bufio.Reader, 16777216 <= Size < 33554432
 var poolw16M sync.Pool // *bufio.Writer, 16777216 <= Size < 33554432
 
 func get16M() *[]byte {
-    p, _ := pool16M.Get().(*[]byte)
-    return p
+	p, _ := pool16M.Get().(*[]byte)
+	return p
 }
 
 func getb16M() *bytes.Buffer {
-    b, _ := poolb16M.Get().(*bytes.Buffer)
-    return b
-} 
+	b, _ := poolb16M.Get().(*bytes.Buffer)
+	return b
+}
 
 func getr16M() *bufio.Reader {
-    r, _ := poolr16M.Get().(*bufio.Reader)
-    return r
-} 
+	r, _ := poolr16M.Get().(*bufio.Reader)
+	return r
+}
 
 func getw16M() *bufio.Writer {
-    w, _ := poolw16M.Get().(*bufio.Writer)
-    return w
-} 
+	w, _ := poolw16M.Get().(*bufio.Writer)
+	return w
+}
 
 func put16M(b *[]byte) {
 	pool16M.Put(b)
@@ -3167,46 +3166,46 @@ func putw16M(w *bufio.Writer) {
 
 // GetBytesBuffer16M gets a bytes.Buffer with a capacity of at least 16M bytes.
 func GetBytesBuffer16M() *bytes.Buffer {
-    if b := getb16M(); b != nil {
-        return b
+	if b := getb16M(); b != nil {
+		return b
 	}
 	if p := get16M(); p != nil {
-        return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(*p)
 	}
-    return bytes.NewBuffer(make([]byte, 16777216))
+	return bytes.NewBuffer(make([]byte, 16777216))
 }
 
 // GetBytesSlice16M gets a byte slice with a capacity of at least 16M bytes and length of 16M bytes.
 func GetBytesSlice16M() []byte {
-    if p := get16M(); p != nil {
-        return *p
+	if p := get16M(); p != nil {
+		return *p
 	}
 	if b := getb16M(); b != nil {
 		return bb2bs(b)
 	}
-    p := make([]byte, 16777216)
-    return p
+	p := make([]byte, 16777216)
+	return p
 }
 
 // GetBytesSlicePtr16M is like GetBytesSlice16M but returns a pointer to the slice instead. This is needed
 // as PutBytesSlice16M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr16M does not
 // allocate.
 func GetBytesSlicePtr16M() *[]byte {
-    if p := get16M(); p != nil {
-        return p
+	if p := get16M(); p != nil {
+		return p
 	}
 	if b := getb16M(); b != nil {
 		p := bb2bs(b)
 		return &p
 	}
-    p := make([]byte, 16777216)
-    return &p
+	p := make([]byte, 16777216)
+	return &p
 }
 
 func GetBufioReader16M(pr io.Reader) *bufio.Reader {
 	if r := getr16M(); r != nil {
 		r.Reset(pr)
-        return r
+		return r
 	}
 	return bufio.NewReaderSize(pr, 16777216)
 }
@@ -3214,7 +3213,7 @@ func GetBufioReader16M(pr io.Reader) *bufio.Reader {
 func GetBufioWriter16M(pw io.Writer) *bufio.Writer {
 	if w := getw16M(); w != nil {
 		w.Reset(pw)
-        return w
+		return w
 	}
 	return bufio.NewWriterSize(pw, 16777216)
 }
@@ -3225,15 +3224,15 @@ func GetBufioWriter16M(pw io.Writer) *bufio.Writer {
 // PutBytesBuffer16M is optimized for bytes.Buffer of capacity [16777216, 33554432) but will accepts other
 // sizes as well.
 func PutBytesBuffer16M(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
-    }
-    if l := b.Cap(); l < 16777216 || l >= 33554432 {
-        return PutBytesBuffer(b)
-    }
+	if b == nil {
+		return false
+	}
+	if l := b.Cap(); l < 16777216 || l >= 33554432 {
+		return PutBytesBuffer(b)
+	}
 	b.Reset()
-    putb16M(b)
-    return true
+	putb16M(b)
+	return true
 }
 
 // PutBytesSlice16M recycles the passed byte slice. If the byte slice can not be recycled (e.g. because its capacity
@@ -3243,53 +3242,53 @@ func PutBytesBuffer16M(b *bytes.Buffer) bool {
 // sizes as well.
 // PutBytesSlice16M, contrary to PutBytesSlicePtr16M, will perform a pointer-sized allocation for each call.
 func PutBytesSlice16M(p []byte) bool {
-    if l := cap(p); l < 16777216 || l >= 33554432 {
-        return PutBytesSlice(p)
-    }
-    p = p[0:16777216]
-    put16M(&p)
-    return true
+	if l := cap(p); l < 16777216 || l >= 33554432 {
+		return PutBytesSlice(p)
+	}
+	p = p[0:16777216]
+	put16M(&p)
+	return true
 }
 
-// PutBytesSlicePtr16M is like PutBytesSlice16M, but it accepts a pointer to the byte slice and does not perform 
+// PutBytesSlicePtr16M is like PutBytesSlice16M, but it accepts a pointer to the byte slice and does not perform
 // a pointer-sized allocation for each call.
 func PutBytesSlicePtr16M(p *[]byte) bool {
-    if p == nil {
-        return false
-    }
-    if l := cap(*p); l < 16777216 || l >= 33554432 {
-        return PutBytesSlicePtr(p)
-    }
-    *p = (*p)[0:16777216]
-    put16M(p)
-    return true
+	if p == nil {
+		return false
+	}
+	if l := cap(*p); l < 16777216 || l >= 33554432 {
+		return PutBytesSlicePtr(p)
+	}
+	*p = (*p)[0:16777216]
+	put16M(p)
+	return true
 }
 
 func PutBufioReader16M(r *bufio.Reader) bool {
-    if r == nil {
-        return false
-    }
-    if l := r.Size(); l < 16777216 || l >= 33554432 {
-        return PutBufioReader(r)
-    }
+	if r == nil {
+		return false
+	}
+	if l := r.Size(); l < 16777216 || l >= 33554432 {
+		return PutBufioReader(r)
+	}
 	r.Reset(nil) // to not keep the parent reader alive
-    putr16M(r)
-    return true
+	putr16M(r)
+	return true
 }
 
 func PutBufioWriter16M(w *bufio.Writer) bool {
-    if w == nil {
-        return false
-    }
-    if l := w.Size(); l < 16777216 || l >= 33554432 {
-        return PutBufioWriter(w)
-    }
+	if w == nil {
+		return false
+	}
+	if l := w.Size(); l < 16777216 || l >= 33554432 {
+		return PutBufioWriter(w)
+	}
 	w.Reset(nil) // to not keep the parent writer alive
-    putw16M(w)
-    return true
+	putw16M(w)
+	return true
 }
 
-// BufferPool16M is a httputil.BufferPool that provides byte slices of 16M bytes. 
+// BufferPool16M is a httputil.BufferPool that provides byte slices of 16M bytes.
 type BufferPool16M struct {
 	httputil.BufferPool
 }
@@ -3306,7 +3305,7 @@ func (_ BufferPool16M) Put(b []byte) {
 
 // BufferPtrPool16M is like BufferPool16M, but using pointer to byte slices instead (to avoid allocations during Put).
 // For this reason it is not compatible with httputil.BufferPool.
-type BufferPtrPool16M struct {}
+type BufferPtrPool16M struct{}
 
 // Get gets a byte slice from the pool. See GetBytesSlicePtr16M for details.
 func (_ BufferPtrPool16M) Get() *[]byte {
@@ -3318,64 +3317,63 @@ func (_ BufferPtrPool16M) Put(b *[]byte) {
 	PutBytesSlicePtr16M(b)
 }
 
-
 // GetBytesBuffer returns a bytes.Buffer with at least size bytes of capacity.
 // If your code uses buffers of static size, it is more performant to call one of the GetBytesBufferXxx functions instead.
 // Calling GetBytesBuffer with a negative size panics.
 func GetBytesBuffer(size int) *bytes.Buffer {
-    switch {
-    
-    case size > 0 && size <= 256:
-        return GetBytesBuffer256()
-    
-    case size > 256 && size <= 512:
-        return GetBytesBuffer512()
-    
-    case size > 512 && size <= 1024:
-        return GetBytesBuffer1K()
-    
-    case size > 1024 && size <= 2048:
-        return GetBytesBuffer2K()
-    
-    case size > 2048 && size <= 4096:
-        return GetBytesBuffer4K()
-    
-    case size > 4096 && size <= 8192:
-        return GetBytesBuffer8K()
-    
-    case size > 8192 && size <= 16384:
-        return GetBytesBuffer16K()
-    
-    case size > 16384 && size <= 32768:
-        return GetBytesBuffer32K()
-    
-    case size > 32768 && size <= 65536:
-        return GetBytesBuffer64K()
-    
-    case size > 65536 && size <= 131072:
-        return GetBytesBuffer128K()
-    
-    case size > 131072 && size <= 262144:
-        return GetBytesBuffer256K()
-    
-    case size > 262144 && size <= 524288:
-        return GetBytesBuffer512K()
-    
-    case size > 524288 && size <= 1048576:
-        return GetBytesBuffer1M()
-    
-    case size > 1048576 && size <= 2097152:
-        return GetBytesBuffer2M()
-    
-    case size > 2097152 && size <= 4194304:
-        return GetBytesBuffer4M()
-    
-    case size > 4194304 && size <= 8388608:
-        return GetBytesBuffer8M()
-    
-    case size > 8388608 && size <= 16777216:
-        return GetBytesBuffer16M()
-    
+	switch {
+
+	case size > 0 && size <= 256:
+		return GetBytesBuffer256()
+
+	case size > 256 && size <= 512:
+		return GetBytesBuffer512()
+
+	case size > 512 && size <= 1024:
+		return GetBytesBuffer1K()
+
+	case size > 1024 && size <= 2048:
+		return GetBytesBuffer2K()
+
+	case size > 2048 && size <= 4096:
+		return GetBytesBuffer4K()
+
+	case size > 4096 && size <= 8192:
+		return GetBytesBuffer8K()
+
+	case size > 8192 && size <= 16384:
+		return GetBytesBuffer16K()
+
+	case size > 16384 && size <= 32768:
+		return GetBytesBuffer32K()
+
+	case size > 32768 && size <= 65536:
+		return GetBytesBuffer64K()
+
+	case size > 65536 && size <= 131072:
+		return GetBytesBuffer128K()
+
+	case size > 131072 && size <= 262144:
+		return GetBytesBuffer256K()
+
+	case size > 262144 && size <= 524288:
+		return GetBytesBuffer512K()
+
+	case size > 524288 && size <= 1048576:
+		return GetBytesBuffer1M()
+
+	case size > 1048576 && size <= 2097152:
+		return GetBytesBuffer2M()
+
+	case size > 2097152 && size <= 4194304:
+		return GetBytesBuffer4M()
+
+	case size > 4194304 && size <= 8388608:
+		return GetBytesBuffer8M()
+
+	case size > 8388608 && size <= 16777216:
+		return GetBytesBuffer16M()
+
 	default:
 		return bytes.NewBuffer(make([]byte, size))
 	}
@@ -3386,59 +3384,59 @@ func GetBytesBuffer(size int) *bytes.Buffer {
 // GetBytesSlice, contrary to GetBytesSlicePtr, performs a pointer-sized allocation per call.
 // Calling GetBytesSlice with a negative size panics.
 func GetBytesSlice(size int) []byte {
-    switch {
-    
-    case size > 0 && size <= 256:
-        return GetBytesSlice256()
-    
-    case size > 256 && size <= 512:
-        return GetBytesSlice512()
-    
-    case size > 512 && size <= 1024:
-        return GetBytesSlice1K()
-    
-    case size > 1024 && size <= 2048:
-        return GetBytesSlice2K()
-    
-    case size > 2048 && size <= 4096:
-        return GetBytesSlice4K()
-    
-    case size > 4096 && size <= 8192:
-        return GetBytesSlice8K()
-    
-    case size > 8192 && size <= 16384:
-        return GetBytesSlice16K()
-    
-    case size > 16384 && size <= 32768:
-        return GetBytesSlice32K()
-    
-    case size > 32768 && size <= 65536:
-        return GetBytesSlice64K()
-    
-    case size > 65536 && size <= 131072:
-        return GetBytesSlice128K()
-    
-    case size > 131072 && size <= 262144:
-        return GetBytesSlice256K()
-    
-    case size > 262144 && size <= 524288:
-        return GetBytesSlice512K()
-    
-    case size > 524288 && size <= 1048576:
-        return GetBytesSlice1M()
-    
-    case size > 1048576 && size <= 2097152:
-        return GetBytesSlice2M()
-    
-    case size > 2097152 && size <= 4194304:
-        return GetBytesSlice4M()
-    
-    case size > 4194304 && size <= 8388608:
-        return GetBytesSlice8M()
-    
-    case size > 8388608 && size <= 16777216:
-        return GetBytesSlice16M()
-    
+	switch {
+
+	case size > 0 && size <= 256:
+		return GetBytesSlice256()
+
+	case size > 256 && size <= 512:
+		return GetBytesSlice512()
+
+	case size > 512 && size <= 1024:
+		return GetBytesSlice1K()
+
+	case size > 1024 && size <= 2048:
+		return GetBytesSlice2K()
+
+	case size > 2048 && size <= 4096:
+		return GetBytesSlice4K()
+
+	case size > 4096 && size <= 8192:
+		return GetBytesSlice8K()
+
+	case size > 8192 && size <= 16384:
+		return GetBytesSlice16K()
+
+	case size > 16384 && size <= 32768:
+		return GetBytesSlice32K()
+
+	case size > 32768 && size <= 65536:
+		return GetBytesSlice64K()
+
+	case size > 65536 && size <= 131072:
+		return GetBytesSlice128K()
+
+	case size > 131072 && size <= 262144:
+		return GetBytesSlice256K()
+
+	case size > 262144 && size <= 524288:
+		return GetBytesSlice512K()
+
+	case size > 524288 && size <= 1048576:
+		return GetBytesSlice1M()
+
+	case size > 1048576 && size <= 2097152:
+		return GetBytesSlice2M()
+
+	case size > 2097152 && size <= 4194304:
+		return GetBytesSlice4M()
+
+	case size > 4194304 && size <= 8388608:
+		return GetBytesSlice8M()
+
+	case size > 8388608 && size <= 16777216:
+		return GetBytesSlice16M()
+
 	default:
 		return make([]byte, size)
 	}
@@ -3447,59 +3445,59 @@ func GetBytesSlice(size int) []byte {
 // GetBytesSlicePtr is like GetBytesSlice but returns a pointer to the byte slice.
 // Contrary to GetBytesSlice, it does not perform a pointer-sized allocation per call.
 func GetBytesSlicePtr(size int) *[]byte {
-    switch {
-    
-    case size > 0 && size <= 256:
-        return GetBytesSlicePtr256()
-    
-    case size > 256 && size <= 512:
-        return GetBytesSlicePtr512()
-    
-    case size > 512 && size <= 1024:
-        return GetBytesSlicePtr1K()
-    
-    case size > 1024 && size <= 2048:
-        return GetBytesSlicePtr2K()
-    
-    case size > 2048 && size <= 4096:
-        return GetBytesSlicePtr4K()
-    
-    case size > 4096 && size <= 8192:
-        return GetBytesSlicePtr8K()
-    
-    case size > 8192 && size <= 16384:
-        return GetBytesSlicePtr16K()
-    
-    case size > 16384 && size <= 32768:
-        return GetBytesSlicePtr32K()
-    
-    case size > 32768 && size <= 65536:
-        return GetBytesSlicePtr64K()
-    
-    case size > 65536 && size <= 131072:
-        return GetBytesSlicePtr128K()
-    
-    case size > 131072 && size <= 262144:
-        return GetBytesSlicePtr256K()
-    
-    case size > 262144 && size <= 524288:
-        return GetBytesSlicePtr512K()
-    
-    case size > 524288 && size <= 1048576:
-        return GetBytesSlicePtr1M()
-    
-    case size > 1048576 && size <= 2097152:
-        return GetBytesSlicePtr2M()
-    
-    case size > 2097152 && size <= 4194304:
-        return GetBytesSlicePtr4M()
-    
-    case size > 4194304 && size <= 8388608:
-        return GetBytesSlicePtr8M()
-    
-    case size > 8388608 && size <= 16777216:
-        return GetBytesSlicePtr16M()
-    
+	switch {
+
+	case size > 0 && size <= 256:
+		return GetBytesSlicePtr256()
+
+	case size > 256 && size <= 512:
+		return GetBytesSlicePtr512()
+
+	case size > 512 && size <= 1024:
+		return GetBytesSlicePtr1K()
+
+	case size > 1024 && size <= 2048:
+		return GetBytesSlicePtr2K()
+
+	case size > 2048 && size <= 4096:
+		return GetBytesSlicePtr4K()
+
+	case size > 4096 && size <= 8192:
+		return GetBytesSlicePtr8K()
+
+	case size > 8192 && size <= 16384:
+		return GetBytesSlicePtr16K()
+
+	case size > 16384 && size <= 32768:
+		return GetBytesSlicePtr32K()
+
+	case size > 32768 && size <= 65536:
+		return GetBytesSlicePtr64K()
+
+	case size > 65536 && size <= 131072:
+		return GetBytesSlicePtr128K()
+
+	case size > 131072 && size <= 262144:
+		return GetBytesSlicePtr256K()
+
+	case size > 262144 && size <= 524288:
+		return GetBytesSlicePtr512K()
+
+	case size > 524288 && size <= 1048576:
+		return GetBytesSlicePtr1M()
+
+	case size > 1048576 && size <= 2097152:
+		return GetBytesSlicePtr2M()
+
+	case size > 2097152 && size <= 4194304:
+		return GetBytesSlicePtr4M()
+
+	case size > 4194304 && size <= 8388608:
+		return GetBytesSlicePtr8M()
+
+	case size > 8388608 && size <= 16777216:
+		return GetBytesSlicePtr16M()
+
 	default:
 		p := make([]byte, size)
 		return &p
@@ -3510,80 +3508,80 @@ func GetBytesSlicePtr(size int) *[]byte {
 // is too small or too big) false is returned and the bytes.Buffer is unmodified, otherwise the bytes.Buffer is
 // recycled and true is returned. In the latter case, the caller should never use again the passed bytes.Buffer.
 func PutBytesBuffer(b *bytes.Buffer) bool {
-    if b == nil {
-        return false
+	if b == nil {
+		return false
 	}
 	size := b.Cap()
-    switch {
-    
+	switch {
+
 	case size >= 256 && size < 512:
 		b.Reset()
 		putb256(b)
-    
+
 	case size >= 512 && size < 1024:
 		b.Reset()
 		putb512(b)
-    
+
 	case size >= 1024 && size < 2048:
 		b.Reset()
 		putb1K(b)
-    
+
 	case size >= 2048 && size < 4096:
 		b.Reset()
 		putb2K(b)
-    
+
 	case size >= 4096 && size < 8192:
 		b.Reset()
 		putb4K(b)
-    
+
 	case size >= 8192 && size < 16384:
 		b.Reset()
 		putb8K(b)
-    
+
 	case size >= 16384 && size < 32768:
 		b.Reset()
 		putb16K(b)
-    
+
 	case size >= 32768 && size < 65536:
 		b.Reset()
 		putb32K(b)
-    
+
 	case size >= 65536 && size < 131072:
 		b.Reset()
 		putb64K(b)
-    
+
 	case size >= 131072 && size < 262144:
 		b.Reset()
 		putb128K(b)
-    
+
 	case size >= 262144 && size < 524288:
 		b.Reset()
 		putb256K(b)
-    
+
 	case size >= 524288 && size < 1048576:
 		b.Reset()
 		putb512K(b)
-    
+
 	case size >= 1048576 && size < 2097152:
 		b.Reset()
 		putb1M(b)
-    
+
 	case size >= 2097152 && size < 4194304:
 		b.Reset()
 		putb2M(b)
-    
+
 	case size >= 4194304 && size < 8388608:
 		b.Reset()
 		putb4M(b)
-    
+
 	case size >= 8388608 && size < 16777216:
 		b.Reset()
 		putb8M(b)
-    
+
 	case size >= 16777216 && size < 33554432:
 		b.Reset()
 		putb16M(b)
-    
+
 	default:
 		return false
 	}
@@ -3592,76 +3590,76 @@ func PutBytesBuffer(b *bytes.Buffer) bool {
 
 func PutBytesSlice(b []byte) bool {
 	size := cap(b)
-    switch {
-    
-    case size >= 256 && size < 512:
+	switch {
+
+	case size >= 256 && size < 512:
 		b = b[0:256]
 		put256(&b)
-    
-    case size >= 512 && size < 1024:
+
+	case size >= 512 && size < 1024:
 		b = b[0:512]
 		put512(&b)
-    
-    case size >= 1024 && size < 2048:
+
+	case size >= 1024 && size < 2048:
 		b = b[0:1024]
 		put1K(&b)
-    
-    case size >= 2048 && size < 4096:
+
+	case size >= 2048 && size < 4096:
 		b = b[0:2048]
 		put2K(&b)
-    
-    case size >= 4096 && size < 8192:
+
+	case size >= 4096 && size < 8192:
 		b = b[0:4096]
 		put4K(&b)
-    
-    case size >= 8192 && size < 16384:
+
+	case size >= 8192 && size < 16384:
 		b = b[0:8192]
 		put8K(&b)
-    
-    case size >= 16384 && size < 32768:
+
+	case size >= 16384 && size < 32768:
 		b = b[0:16384]
 		put16K(&b)
-    
-    case size >= 32768 && size < 65536:
+
+	case size >= 32768 && size < 65536:
 		b = b[0:32768]
 		put32K(&b)
-    
-    case size >= 65536 && size < 131072:
+
+	case size >= 65536 && size < 131072:
 		b = b[0:65536]
 		put64K(&b)
-    
-    case size >= 131072 && size < 262144:
+
+	case size >= 131072 && size < 262144:
 		b = b[0:131072]
 		put128K(&b)
-    
-    case size >= 262144 && size < 524288:
+
+	case size >= 262144 && size < 524288:
 		b = b[0:262144]
 		put256K(&b)
-    
-    case size >= 524288 && size < 1048576:
+
+	case size >= 524288 && size < 1048576:
 		b = b[0:524288]
 		put512K(&b)
-    
-    case size >= 1048576 && size < 2097152:
+
+	case size >= 1048576 && size < 2097152:
 		b = b[0:1048576]
 		put1M(&b)
-    
-    case size >= 2097152 && size < 4194304:
+
+	case size >= 2097152 && size < 4194304:
 		b = b[0:2097152]
 		put2M(&b)
-    
-    case size >= 4194304 && size < 8388608:
+
+	case size >= 4194304 && size < 8388608:
 		b = b[0:4194304]
 		put4M(&b)
-    
-    case size >= 8388608 && size < 16777216:
+
+	case size >= 8388608 && size < 16777216:
 		b = b[0:8388608]
 		put8M(&b)
-    
-    case size >= 16777216 && size < 33554432:
+
+	case size >= 16777216 && size < 33554432:
 		b = b[0:16777216]
 		put16M(&b)
-    
+
 	default:
 		return false
 	}
@@ -3669,80 +3667,80 @@ func PutBytesSlice(b []byte) bool {
 }
 
 func PutBytesSlicePtr(b *[]byte) bool {
-    if b == nil {
-        return false
+	if b == nil {
+		return false
 	}
 	size := cap(*b)
-    switch {
-    
-    case size >= 256 && size < 512:
+	switch {
+
+	case size >= 256 && size < 512:
 		*b = (*b)[0:256]
 		put256(b)
-    
-    case size >= 512 && size < 1024:
+
+	case size >= 512 && size < 1024:
 		*b = (*b)[0:512]
 		put512(b)
-    
-    case size >= 1024 && size < 2048:
+
+	case size >= 1024 && size < 2048:
 		*b = (*b)[0:1024]
 		put1K(b)
-    
-    case size >= 2048 && size < 4096:
+
+	case size >= 2048 && size < 4096:
 		*b = (*b)[0:2048]
 		put2K(b)
-    
-    case size >= 4096 && size < 8192:
+
+	case size >= 4096 && size < 8192:
 		*b = (*b)[0:4096]
 		put4K(b)
-    
-    case size >= 8192 && size < 16384:
+
+	case size >= 8192 && size < 16384:
 		*b = (*b)[0:8192]
 		put8K(b)
-    
-    case size >= 16384 && size < 32768:
+
+	case size >= 16384 && size < 32768:
 		*b = (*b)[0:16384]
 		put16K(b)
-    
-    case size >= 32768 && size < 65536:
+
+	case size >= 32768 && size < 65536:
 		*b = (*b)[0:32768]
 		put32K(b)
-    
-    case size >= 65536 && size < 131072:
+
+	case size >= 65536 && size < 131072:
 		*b = (*b)[0:65536]
 		put64K(b)
-    
-    case size >= 131072 && size < 262144:
+
+	case size >= 131072 && size < 262144:
 		*b = (*b)[0:131072]
 		put128K(b)
-    
-    case size >= 262144 && size < 524288:
+
+	case size >= 262144 && size < 524288:
 		*b = (*b)[0:262144]
 		put256K(b)
-    
-    case size >= 524288 && size < 1048576:
+
+	case size >= 524288 && size < 1048576:
 		*b = (*b)[0:524288]
 		put512K(b)
-    
-    case size >= 1048576 && size < 2097152:
+
+	case size >= 1048576 && size < 2097152:
 		*b = (*b)[0:1048576]
 		put1M(b)
-    
-    case size >= 2097152 && size < 4194304:
+
+	case size >= 2097152 && size < 4194304:
 		*b = (*b)[0:2097152]
 		put2M(b)
-    
-    case size >= 4194304 && size < 8388608:
+
+	case size >= 4194304 && size < 8388608:
 		*b = (*b)[0:4194304]
 		put4M(b)
-    
-    case size >= 8388608 && size < 16777216:
+
+	case size >= 8388608 && size < 16777216:
 		*b = (*b)[0:8388608]
 		put8M(b)
-    
-    case size >= 16777216 && size < 33554432:
+
+	case size >= 16777216 && size < 33554432:
 		*b = (*b)[0:16777216]
 		put16M(b)
-    
+
 	default:
 		return false
 	}
@@ -3750,80 +3748,80 @@ func PutBytesSlicePtr(b *[]byte) bool {
 }
 
 func PutBufioReader(r *bufio.Reader) bool {
-    if r == nil {
-        return false
+	if r == nil {
+		return false
 	}
 	size := r.Size()
-    switch {
-    
+	switch {
+
 	case size >= 256 && size < 512:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr256(r)
-    
+
 	case size >= 512 && size < 1024:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr512(r)
-    
+
 	case size >= 1024 && size < 2048:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr1K(r)
-    
+
 	case size >= 2048 && size < 4096:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr2K(r)
-    
+
 	case size >= 4096 && size < 8192:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr4K(r)
-    
+
 	case size >= 8192 && size < 16384:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr8K(r)
-    
+
 	case size >= 16384 && size < 32768:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr16K(r)
-    
+
 	case size >= 32768 && size < 65536:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr32K(r)
-    
+
 	case size >= 65536 && size < 131072:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr64K(r)
-    
+
 	case size >= 131072 && size < 262144:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr128K(r)
-    
+
 	case size >= 262144 && size < 524288:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr256K(r)
-    
+
 	case size >= 524288 && size < 1048576:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr512K(r)
-    
+
 	case size >= 1048576 && size < 2097152:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr1M(r)
-    
+
 	case size >= 2097152 && size < 4194304:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr2M(r)
-    
+
 	case size >= 4194304 && size < 8388608:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr4M(r)
-    
+
 	case size >= 8388608 && size < 16777216:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr8M(r)
-    
+
 	case size >= 16777216 && size < 33554432:
 		r.Reset(nil) // to not keep the parent reader alive
 		putr16M(r)
-    
+
 	default:
 		return false
 	}
@@ -3831,80 +3829,80 @@ func PutBufioReader(r *bufio.Reader) bool {
 }
 
 func PutBufioWriter(w *bufio.Writer) bool {
-    if w == nil {
-        return false
+	if w == nil {
+		return false
 	}
 	size := w.Size()
-    switch {
-    
+	switch {
+
 	case size >= 256 && size < 512:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw256(w)
-    
+
 	case size >= 512 && size < 1024:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw512(w)
-    
+
 	case size >= 1024 && size < 2048:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw1K(w)
-    
+
 	case size >= 2048 && size < 4096:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw2K(w)
-    
+
 	case size >= 4096 && size < 8192:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw4K(w)
-    
+
 	case size >= 8192 && size < 16384:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw8K(w)
-    
+
 	case size >= 16384 && size < 32768:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw16K(w)
-    
+
 	case size >= 32768 && size < 65536:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw32K(w)
-    
+
 	case size >= 65536 && size < 131072:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw64K(w)
-    
+
 	case size >= 131072 && size < 262144:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw128K(w)
-    
+
 	case size >= 262144 && size < 524288:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw256K(w)
-    
+
 	case size >= 524288 && size < 1048576:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw512K(w)
-    
+
 	case size >= 1048576 && size < 2097152:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw1M(w)
-    
+
 	case size >= 2097152 && size < 4194304:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw2M(w)
-    
+
 	case size >= 4194304 && size < 8388608:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw4M(w)
-    
+
 	case size >= 8388608 && size < 16777216:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw8M(w)
-    
+
 	case size >= 16777216 && size < 33554432:
 		w.Reset(nil) // to not keep the parent writer alive
 		putw16M(w)
-    
+
 	default:
 		return false
 	}
@@ -3914,10 +3912,10 @@ func PutBufioWriter(w *bufio.Writer) bool {
 func bb2bs(b *bytes.Buffer) []byte {
 	var zeros [256]byte
 	b.Reset()
-	c, r := b.Cap() / len(zeros), b.Cap() % len(zeros)
+	c, r := b.Cap()/len(zeros), b.Cap()%len(zeros)
 	for i := 0; i < c; i++ {
 		b.Write(zeros[:])
-	} 
+	}
 	b.Write(zeros[:r])
 	return b.Bytes()
 }
