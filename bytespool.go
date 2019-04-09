@@ -3505,6 +3505,69 @@ func GetBytesSlicePtr(size int) *[]byte {
 	}
 }
 
+// GetBufferPool returns a httputil.BufferPool that returns byte slices of capacity
+// greater or equal than size, and of size size.
+func GetBufferPool(size int) httputil.BufferPool {
+	bp := internal.BufferPool{Sz: size}
+	switch {
+
+	case size > 0 && size <= 256:
+		bp.P = BufferPool256{}
+
+	case size > 256 && size <= 512:
+		bp.P = BufferPool512{}
+
+	case size > 512 && size <= 1024:
+		bp.P = BufferPool1K{}
+
+	case size > 1024 && size <= 2048:
+		bp.P = BufferPool2K{}
+
+	case size > 2048 && size <= 4096:
+		bp.P = BufferPool4K{}
+
+	case size > 4096 && size <= 8192:
+		bp.P = BufferPool8K{}
+
+	case size > 8192 && size <= 16384:
+		bp.P = BufferPool16K{}
+
+	case size > 16384 && size <= 32768:
+		bp.P = BufferPool32K{}
+
+	case size > 32768 && size <= 65536:
+		bp.P = BufferPool64K{}
+
+	case size > 65536 && size <= 131072:
+		bp.P = BufferPool128K{}
+
+	case size > 131072 && size <= 262144:
+		bp.P = BufferPool256K{}
+
+	case size > 262144 && size <= 524288:
+		bp.P = BufferPool512K{}
+
+	case size > 524288 && size <= 1048576:
+		bp.P = BufferPool1M{}
+
+	case size > 1048576 && size <= 2097152:
+		bp.P = BufferPool2M{}
+
+	case size > 2097152 && size <= 4194304:
+		bp.P = BufferPool4M{}
+
+	case size > 4194304 && size <= 8388608:
+		bp.P = BufferPool8M{}
+
+	case size > 8388608 && size <= 16777216:
+		bp.P = BufferPool16M{}
+
+	default:
+		return &internal.SingleSizeBufferPool{Sz: size}
+	}
+	return bp
+}
+
 // PutBytesBuffer recycles the passed bytes.Buffer. If the bytes.Buffer can not be recycled (e.g. because its capacity
 // is too small or too big) false is returned and the bytes.Buffer is unmodified, otherwise the bytes.Buffer is
 // recycled and true is returned. In the latter case, the caller should never use again the passed bytes.Buffer.

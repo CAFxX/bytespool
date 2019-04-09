@@ -269,6 +269,21 @@ func GetBytesSlicePtr(size int) *[]byte {
 	}
 }
 
+// GetBufferPool returns a httputil.BufferPool that returns byte slices of capacity
+// greater or equal than size, and of size size.
+func GetBufferPool(size int) httputil.BufferPool {
+	bp := internal.BufferPool{Sz: size}
+	switch {
+	{{range .}}
+	case size > {{.BytesLow}} && size <= {{.Bytes}}:
+		bp.P = BufferPool{{.Short}}{}
+	{{end}}
+	default:
+		return &internal.SingleSizeBufferPool{Sz: size}
+	}
+	return bp
+}
+
 // PutBytesBuffer recycles the passed bytes.Buffer. If the bytes.Buffer can not be recycled (e.g. because its capacity
 // is too small or too big) false is returned and the bytes.Buffer is unmodified, otherwise the bytes.Buffer is
 // recycled and true is returned. In the latter case, the caller should never use again the passed bytes.Buffer.
