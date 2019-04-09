@@ -1,7 +1,7 @@
 
 .PHONY: clean
 clean:
-	rm *.a *.s *.go
+	rm -f *.a *.s *.go
 
 .PHONY: generate
 generate: clean
