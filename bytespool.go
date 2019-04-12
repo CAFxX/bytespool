@@ -99,6 +99,7 @@ func GetBytesSlicePtr256() *[]byte {
 	return &p
 }
 
+// GetBufioReader256 returns a bufio.Reader with an internal buffer size of at least 256.
 func GetBufioReader256(pr io.Reader) *bufio.Reader {
 	if r := getr256(); r != nil {
 		r.Reset(pr)
@@ -107,6 +108,7 @@ func GetBufioReader256(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 256)
 }
 
+// GetBufioWriter256 returns a bufio.Writer with an internal buffer size of at least 256.
 func GetBufioWriter256(pw io.Writer) *bufio.Writer {
 	if w := getw256(); w != nil {
 		w.Reset(pw)
@@ -161,6 +163,12 @@ func PutBytesSlicePtr256(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader256 recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader256 is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader256 callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader256 is optimized for bufio.Reader with Size() in the range (256, 512], but it accepts
+// also other sizes.
 func PutBufioReader256(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -173,6 +181,12 @@ func PutBufioReader256(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter256 recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter256 is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter256 callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter256 is optimized for bufio.Writer with Size() in the range (256, 512], but it accepts
+// also other sizes.
 func PutBufioWriter256(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -293,6 +307,7 @@ func GetBytesSlicePtr512() *[]byte {
 	return &p
 }
 
+// GetBufioReader512 returns a bufio.Reader with an internal buffer size of at least 512.
 func GetBufioReader512(pr io.Reader) *bufio.Reader {
 	if r := getr512(); r != nil {
 		r.Reset(pr)
@@ -301,6 +316,7 @@ func GetBufioReader512(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 512)
 }
 
+// GetBufioWriter512 returns a bufio.Writer with an internal buffer size of at least 512.
 func GetBufioWriter512(pw io.Writer) *bufio.Writer {
 	if w := getw512(); w != nil {
 		w.Reset(pw)
@@ -355,6 +371,12 @@ func PutBytesSlicePtr512(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader512 recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader512 is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader512 callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader512 is optimized for bufio.Reader with Size() in the range (512, 1024], but it accepts
+// also other sizes.
 func PutBufioReader512(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -367,6 +389,12 @@ func PutBufioReader512(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter512 recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter512 is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter512 callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter512 is optimized for bufio.Writer with Size() in the range (512, 1024], but it accepts
+// also other sizes.
 func PutBufioWriter512(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -487,6 +515,7 @@ func GetBytesSlicePtr1K() *[]byte {
 	return &p
 }
 
+// GetBufioReader1K returns a bufio.Reader with an internal buffer size of at least 1024.
 func GetBufioReader1K(pr io.Reader) *bufio.Reader {
 	if r := getr1K(); r != nil {
 		r.Reset(pr)
@@ -495,6 +524,7 @@ func GetBufioReader1K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 1024)
 }
 
+// GetBufioWriter1K returns a bufio.Writer with an internal buffer size of at least 1024.
 func GetBufioWriter1K(pw io.Writer) *bufio.Writer {
 	if w := getw1K(); w != nil {
 		w.Reset(pw)
@@ -549,6 +579,12 @@ func PutBytesSlicePtr1K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader1K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader1K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader1K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader1K is optimized for bufio.Reader with Size() in the range (1024, 2048], but it accepts
+// also other sizes.
 func PutBufioReader1K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -561,6 +597,12 @@ func PutBufioReader1K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter1K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter1K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter1K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter1K is optimized for bufio.Writer with Size() in the range (1024, 2048], but it accepts
+// also other sizes.
 func PutBufioWriter1K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -681,6 +723,7 @@ func GetBytesSlicePtr2K() *[]byte {
 	return &p
 }
 
+// GetBufioReader2K returns a bufio.Reader with an internal buffer size of at least 2048.
 func GetBufioReader2K(pr io.Reader) *bufio.Reader {
 	if r := getr2K(); r != nil {
 		r.Reset(pr)
@@ -689,6 +732,7 @@ func GetBufioReader2K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 2048)
 }
 
+// GetBufioWriter2K returns a bufio.Writer with an internal buffer size of at least 2048.
 func GetBufioWriter2K(pw io.Writer) *bufio.Writer {
 	if w := getw2K(); w != nil {
 		w.Reset(pw)
@@ -743,6 +787,12 @@ func PutBytesSlicePtr2K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader2K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader2K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader2K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader2K is optimized for bufio.Reader with Size() in the range (2048, 4096], but it accepts
+// also other sizes.
 func PutBufioReader2K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -755,6 +805,12 @@ func PutBufioReader2K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter2K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter2K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter2K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter2K is optimized for bufio.Writer with Size() in the range (2048, 4096], but it accepts
+// also other sizes.
 func PutBufioWriter2K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -875,6 +931,7 @@ func GetBytesSlicePtr4K() *[]byte {
 	return &p
 }
 
+// GetBufioReader4K returns a bufio.Reader with an internal buffer size of at least 4096.
 func GetBufioReader4K(pr io.Reader) *bufio.Reader {
 	if r := getr4K(); r != nil {
 		r.Reset(pr)
@@ -883,6 +940,7 @@ func GetBufioReader4K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 4096)
 }
 
+// GetBufioWriter4K returns a bufio.Writer with an internal buffer size of at least 4096.
 func GetBufioWriter4K(pw io.Writer) *bufio.Writer {
 	if w := getw4K(); w != nil {
 		w.Reset(pw)
@@ -937,6 +995,12 @@ func PutBytesSlicePtr4K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader4K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader4K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader4K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader4K is optimized for bufio.Reader with Size() in the range (4096, 8192], but it accepts
+// also other sizes.
 func PutBufioReader4K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -949,6 +1013,12 @@ func PutBufioReader4K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter4K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter4K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter4K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter4K is optimized for bufio.Writer with Size() in the range (4096, 8192], but it accepts
+// also other sizes.
 func PutBufioWriter4K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -1069,6 +1139,7 @@ func GetBytesSlicePtr8K() *[]byte {
 	return &p
 }
 
+// GetBufioReader8K returns a bufio.Reader with an internal buffer size of at least 8192.
 func GetBufioReader8K(pr io.Reader) *bufio.Reader {
 	if r := getr8K(); r != nil {
 		r.Reset(pr)
@@ -1077,6 +1148,7 @@ func GetBufioReader8K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 8192)
 }
 
+// GetBufioWriter8K returns a bufio.Writer with an internal buffer size of at least 8192.
 func GetBufioWriter8K(pw io.Writer) *bufio.Writer {
 	if w := getw8K(); w != nil {
 		w.Reset(pw)
@@ -1131,6 +1203,12 @@ func PutBytesSlicePtr8K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader8K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader8K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader8K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader8K is optimized for bufio.Reader with Size() in the range (8192, 16384], but it accepts
+// also other sizes.
 func PutBufioReader8K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -1143,6 +1221,12 @@ func PutBufioReader8K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter8K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter8K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter8K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter8K is optimized for bufio.Writer with Size() in the range (8192, 16384], but it accepts
+// also other sizes.
 func PutBufioWriter8K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -1263,6 +1347,7 @@ func GetBytesSlicePtr16K() *[]byte {
 	return &p
 }
 
+// GetBufioReader16K returns a bufio.Reader with an internal buffer size of at least 16384.
 func GetBufioReader16K(pr io.Reader) *bufio.Reader {
 	if r := getr16K(); r != nil {
 		r.Reset(pr)
@@ -1271,6 +1356,7 @@ func GetBufioReader16K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 16384)
 }
 
+// GetBufioWriter16K returns a bufio.Writer with an internal buffer size of at least 16384.
 func GetBufioWriter16K(pw io.Writer) *bufio.Writer {
 	if w := getw16K(); w != nil {
 		w.Reset(pw)
@@ -1325,6 +1411,12 @@ func PutBytesSlicePtr16K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader16K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader16K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader16K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader16K is optimized for bufio.Reader with Size() in the range (16384, 32768], but it accepts
+// also other sizes.
 func PutBufioReader16K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -1337,6 +1429,12 @@ func PutBufioReader16K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter16K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter16K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter16K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter16K is optimized for bufio.Writer with Size() in the range (16384, 32768], but it accepts
+// also other sizes.
 func PutBufioWriter16K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -1457,6 +1555,7 @@ func GetBytesSlicePtr32K() *[]byte {
 	return &p
 }
 
+// GetBufioReader32K returns a bufio.Reader with an internal buffer size of at least 32768.
 func GetBufioReader32K(pr io.Reader) *bufio.Reader {
 	if r := getr32K(); r != nil {
 		r.Reset(pr)
@@ -1465,6 +1564,7 @@ func GetBufioReader32K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 32768)
 }
 
+// GetBufioWriter32K returns a bufio.Writer with an internal buffer size of at least 32768.
 func GetBufioWriter32K(pw io.Writer) *bufio.Writer {
 	if w := getw32K(); w != nil {
 		w.Reset(pw)
@@ -1519,6 +1619,12 @@ func PutBytesSlicePtr32K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader32K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader32K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader32K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader32K is optimized for bufio.Reader with Size() in the range (32768, 65536], but it accepts
+// also other sizes.
 func PutBufioReader32K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -1531,6 +1637,12 @@ func PutBufioReader32K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter32K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter32K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter32K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter32K is optimized for bufio.Writer with Size() in the range (32768, 65536], but it accepts
+// also other sizes.
 func PutBufioWriter32K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -1651,6 +1763,7 @@ func GetBytesSlicePtr64K() *[]byte {
 	return &p
 }
 
+// GetBufioReader64K returns a bufio.Reader with an internal buffer size of at least 65536.
 func GetBufioReader64K(pr io.Reader) *bufio.Reader {
 	if r := getr64K(); r != nil {
 		r.Reset(pr)
@@ -1659,6 +1772,7 @@ func GetBufioReader64K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 65536)
 }
 
+// GetBufioWriter64K returns a bufio.Writer with an internal buffer size of at least 65536.
 func GetBufioWriter64K(pw io.Writer) *bufio.Writer {
 	if w := getw64K(); w != nil {
 		w.Reset(pw)
@@ -1713,6 +1827,12 @@ func PutBytesSlicePtr64K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader64K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader64K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader64K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader64K is optimized for bufio.Reader with Size() in the range (65536, 131072], but it accepts
+// also other sizes.
 func PutBufioReader64K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -1725,6 +1845,12 @@ func PutBufioReader64K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter64K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter64K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter64K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter64K is optimized for bufio.Writer with Size() in the range (65536, 131072], but it accepts
+// also other sizes.
 func PutBufioWriter64K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -1845,6 +1971,7 @@ func GetBytesSlicePtr128K() *[]byte {
 	return &p
 }
 
+// GetBufioReader128K returns a bufio.Reader with an internal buffer size of at least 131072.
 func GetBufioReader128K(pr io.Reader) *bufio.Reader {
 	if r := getr128K(); r != nil {
 		r.Reset(pr)
@@ -1853,6 +1980,7 @@ func GetBufioReader128K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 131072)
 }
 
+// GetBufioWriter128K returns a bufio.Writer with an internal buffer size of at least 131072.
 func GetBufioWriter128K(pw io.Writer) *bufio.Writer {
 	if w := getw128K(); w != nil {
 		w.Reset(pw)
@@ -1907,6 +2035,12 @@ func PutBytesSlicePtr128K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader128K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader128K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader128K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader128K is optimized for bufio.Reader with Size() in the range (131072, 262144], but it accepts
+// also other sizes.
 func PutBufioReader128K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -1919,6 +2053,12 @@ func PutBufioReader128K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter128K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter128K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter128K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter128K is optimized for bufio.Writer with Size() in the range (131072, 262144], but it accepts
+// also other sizes.
 func PutBufioWriter128K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -2039,6 +2179,7 @@ func GetBytesSlicePtr256K() *[]byte {
 	return &p
 }
 
+// GetBufioReader256K returns a bufio.Reader with an internal buffer size of at least 262144.
 func GetBufioReader256K(pr io.Reader) *bufio.Reader {
 	if r := getr256K(); r != nil {
 		r.Reset(pr)
@@ -2047,6 +2188,7 @@ func GetBufioReader256K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 262144)
 }
 
+// GetBufioWriter256K returns a bufio.Writer with an internal buffer size of at least 262144.
 func GetBufioWriter256K(pw io.Writer) *bufio.Writer {
 	if w := getw256K(); w != nil {
 		w.Reset(pw)
@@ -2101,6 +2243,12 @@ func PutBytesSlicePtr256K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader256K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader256K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader256K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader256K is optimized for bufio.Reader with Size() in the range (262144, 524288], but it accepts
+// also other sizes.
 func PutBufioReader256K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -2113,6 +2261,12 @@ func PutBufioReader256K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter256K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter256K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter256K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter256K is optimized for bufio.Writer with Size() in the range (262144, 524288], but it accepts
+// also other sizes.
 func PutBufioWriter256K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -2233,6 +2387,7 @@ func GetBytesSlicePtr512K() *[]byte {
 	return &p
 }
 
+// GetBufioReader512K returns a bufio.Reader with an internal buffer size of at least 524288.
 func GetBufioReader512K(pr io.Reader) *bufio.Reader {
 	if r := getr512K(); r != nil {
 		r.Reset(pr)
@@ -2241,6 +2396,7 @@ func GetBufioReader512K(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 524288)
 }
 
+// GetBufioWriter512K returns a bufio.Writer with an internal buffer size of at least 524288.
 func GetBufioWriter512K(pw io.Writer) *bufio.Writer {
 	if w := getw512K(); w != nil {
 		w.Reset(pw)
@@ -2295,6 +2451,12 @@ func PutBytesSlicePtr512K(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader512K recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader512K is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader512K callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader512K is optimized for bufio.Reader with Size() in the range (524288, 1048576], but it accepts
+// also other sizes.
 func PutBufioReader512K(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -2307,6 +2469,12 @@ func PutBufioReader512K(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter512K recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter512K is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter512K callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter512K is optimized for bufio.Writer with Size() in the range (524288, 1048576], but it accepts
+// also other sizes.
 func PutBufioWriter512K(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -2427,6 +2595,7 @@ func GetBytesSlicePtr1M() *[]byte {
 	return &p
 }
 
+// GetBufioReader1M returns a bufio.Reader with an internal buffer size of at least 1048576.
 func GetBufioReader1M(pr io.Reader) *bufio.Reader {
 	if r := getr1M(); r != nil {
 		r.Reset(pr)
@@ -2435,6 +2604,7 @@ func GetBufioReader1M(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 1048576)
 }
 
+// GetBufioWriter1M returns a bufio.Writer with an internal buffer size of at least 1048576.
 func GetBufioWriter1M(pw io.Writer) *bufio.Writer {
 	if w := getw1M(); w != nil {
 		w.Reset(pw)
@@ -2489,6 +2659,12 @@ func PutBytesSlicePtr1M(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader1M recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader1M is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader1M callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader1M is optimized for bufio.Reader with Size() in the range (1048576, 2097152], but it accepts
+// also other sizes.
 func PutBufioReader1M(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -2501,6 +2677,12 @@ func PutBufioReader1M(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter1M recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter1M is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter1M callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter1M is optimized for bufio.Writer with Size() in the range (1048576, 2097152], but it accepts
+// also other sizes.
 func PutBufioWriter1M(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -2621,6 +2803,7 @@ func GetBytesSlicePtr2M() *[]byte {
 	return &p
 }
 
+// GetBufioReader2M returns a bufio.Reader with an internal buffer size of at least 2097152.
 func GetBufioReader2M(pr io.Reader) *bufio.Reader {
 	if r := getr2M(); r != nil {
 		r.Reset(pr)
@@ -2629,6 +2812,7 @@ func GetBufioReader2M(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 2097152)
 }
 
+// GetBufioWriter2M returns a bufio.Writer with an internal buffer size of at least 2097152.
 func GetBufioWriter2M(pw io.Writer) *bufio.Writer {
 	if w := getw2M(); w != nil {
 		w.Reset(pw)
@@ -2683,6 +2867,12 @@ func PutBytesSlicePtr2M(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader2M recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader2M is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader2M callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader2M is optimized for bufio.Reader with Size() in the range (2097152, 4194304], but it accepts
+// also other sizes.
 func PutBufioReader2M(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -2695,6 +2885,12 @@ func PutBufioReader2M(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter2M recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter2M is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter2M callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter2M is optimized for bufio.Writer with Size() in the range (2097152, 4194304], but it accepts
+// also other sizes.
 func PutBufioWriter2M(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -2815,6 +3011,7 @@ func GetBytesSlicePtr4M() *[]byte {
 	return &p
 }
 
+// GetBufioReader4M returns a bufio.Reader with an internal buffer size of at least 4194304.
 func GetBufioReader4M(pr io.Reader) *bufio.Reader {
 	if r := getr4M(); r != nil {
 		r.Reset(pr)
@@ -2823,6 +3020,7 @@ func GetBufioReader4M(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 4194304)
 }
 
+// GetBufioWriter4M returns a bufio.Writer with an internal buffer size of at least 4194304.
 func GetBufioWriter4M(pw io.Writer) *bufio.Writer {
 	if w := getw4M(); w != nil {
 		w.Reset(pw)
@@ -2877,6 +3075,12 @@ func PutBytesSlicePtr4M(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader4M recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader4M is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader4M callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader4M is optimized for bufio.Reader with Size() in the range (4194304, 8388608], but it accepts
+// also other sizes.
 func PutBufioReader4M(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -2889,6 +3093,12 @@ func PutBufioReader4M(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter4M recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter4M is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter4M callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter4M is optimized for bufio.Writer with Size() in the range (4194304, 8388608], but it accepts
+// also other sizes.
 func PutBufioWriter4M(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -3009,6 +3219,7 @@ func GetBytesSlicePtr8M() *[]byte {
 	return &p
 }
 
+// GetBufioReader8M returns a bufio.Reader with an internal buffer size of at least 8388608.
 func GetBufioReader8M(pr io.Reader) *bufio.Reader {
 	if r := getr8M(); r != nil {
 		r.Reset(pr)
@@ -3017,6 +3228,7 @@ func GetBufioReader8M(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 8388608)
 }
 
+// GetBufioWriter8M returns a bufio.Writer with an internal buffer size of at least 8388608.
 func GetBufioWriter8M(pw io.Writer) *bufio.Writer {
 	if w := getw8M(); w != nil {
 		w.Reset(pw)
@@ -3071,6 +3283,12 @@ func PutBytesSlicePtr8M(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader8M recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader8M is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader8M callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader8M is optimized for bufio.Reader with Size() in the range (8388608, 16777216], but it accepts
+// also other sizes.
 func PutBufioReader8M(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -3083,6 +3301,12 @@ func PutBufioReader8M(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter8M recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter8M is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter8M callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter8M is optimized for bufio.Writer with Size() in the range (8388608, 16777216], but it accepts
+// also other sizes.
 func PutBufioWriter8M(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -3203,6 +3427,7 @@ func GetBytesSlicePtr16M() *[]byte {
 	return &p
 }
 
+// GetBufioReader16M returns a bufio.Reader with an internal buffer size of at least 16777216.
 func GetBufioReader16M(pr io.Reader) *bufio.Reader {
 	if r := getr16M(); r != nil {
 		r.Reset(pr)
@@ -3211,6 +3436,7 @@ func GetBufioReader16M(pr io.Reader) *bufio.Reader {
 	return bufio.NewReaderSize(pr, 16777216)
 }
 
+// GetBufioWriter16M returns a bufio.Writer with an internal buffer size of at least 16777216.
 func GetBufioWriter16M(pw io.Writer) *bufio.Writer {
 	if w := getw16M(); w != nil {
 		w.Reset(pw)
@@ -3265,6 +3491,12 @@ func PutBytesSlicePtr16M(p *[]byte) bool {
 	return true
 }
 
+// PutBufioReader16M recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader16M is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader16M callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// PutBufioReader16M is optimized for bufio.Reader with Size() in the range (16777216, 33554432], but it accepts
+// also other sizes.
 func PutBufioReader16M(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -3277,6 +3509,12 @@ func PutBufioReader16M(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter16M recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter16M is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter16M callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// PutBufioWriter16M is optimized for bufio.Writer with Size() in the range (16777216, 33554432], but it accepts
+// also other sizes.
 func PutBufioWriter16M(w *bufio.Writer) bool {
 	if w == nil {
 		return false
@@ -3568,6 +3806,124 @@ func GetBufferPool(size int) httputil.BufferPool {
 	return bp
 }
 
+func GetBufioReader(pr io.Reader, size int) *bufio.Reader {
+	switch {
+
+	case size > 0 && size <= 256:
+		return GetBufioReader256(pr)
+
+	case size > 256 && size <= 512:
+		return GetBufioReader512(pr)
+
+	case size > 512 && size <= 1024:
+		return GetBufioReader1K(pr)
+
+	case size > 1024 && size <= 2048:
+		return GetBufioReader2K(pr)
+
+	case size > 2048 && size <= 4096:
+		return GetBufioReader4K(pr)
+
+	case size > 4096 && size <= 8192:
+		return GetBufioReader8K(pr)
+
+	case size > 8192 && size <= 16384:
+		return GetBufioReader16K(pr)
+
+	case size > 16384 && size <= 32768:
+		return GetBufioReader32K(pr)
+
+	case size > 32768 && size <= 65536:
+		return GetBufioReader64K(pr)
+
+	case size > 65536 && size <= 131072:
+		return GetBufioReader128K(pr)
+
+	case size > 131072 && size <= 262144:
+		return GetBufioReader256K(pr)
+
+	case size > 262144 && size <= 524288:
+		return GetBufioReader512K(pr)
+
+	case size > 524288 && size <= 1048576:
+		return GetBufioReader1M(pr)
+
+	case size > 1048576 && size <= 2097152:
+		return GetBufioReader2M(pr)
+
+	case size > 2097152 && size <= 4194304:
+		return GetBufioReader4M(pr)
+
+	case size > 4194304 && size <= 8388608:
+		return GetBufioReader8M(pr)
+
+	case size > 8388608 && size <= 16777216:
+		return GetBufioReader16M(pr)
+
+	default:
+		return bufio.NewReaderSize(pr, size)
+	}
+}
+
+func GetBufioWriter(pw io.Writer, size int) *bufio.Writer {
+	switch {
+
+	case size > 0 && size <= 256:
+		return GetBufioWriter256(pw)
+
+	case size > 256 && size <= 512:
+		return GetBufioWriter512(pw)
+
+	case size > 512 && size <= 1024:
+		return GetBufioWriter1K(pw)
+
+	case size > 1024 && size <= 2048:
+		return GetBufioWriter2K(pw)
+
+	case size > 2048 && size <= 4096:
+		return GetBufioWriter4K(pw)
+
+	case size > 4096 && size <= 8192:
+		return GetBufioWriter8K(pw)
+
+	case size > 8192 && size <= 16384:
+		return GetBufioWriter16K(pw)
+
+	case size > 16384 && size <= 32768:
+		return GetBufioWriter32K(pw)
+
+	case size > 32768 && size <= 65536:
+		return GetBufioWriter64K(pw)
+
+	case size > 65536 && size <= 131072:
+		return GetBufioWriter128K(pw)
+
+	case size > 131072 && size <= 262144:
+		return GetBufioWriter256K(pw)
+
+	case size > 262144 && size <= 524288:
+		return GetBufioWriter512K(pw)
+
+	case size > 524288 && size <= 1048576:
+		return GetBufioWriter1M(pw)
+
+	case size > 1048576 && size <= 2097152:
+		return GetBufioWriter2M(pw)
+
+	case size > 2097152 && size <= 4194304:
+		return GetBufioWriter4M(pw)
+
+	case size > 4194304 && size <= 8388608:
+		return GetBufioWriter8M(pw)
+
+	case size > 8388608 && size <= 16777216:
+		return GetBufioWriter16M(pw)
+
+	default:
+		return bufio.NewWriterSize(pw, size)
+	}
+}
+
 // PutBytesBuffer recycles the passed bytes.Buffer. If the bytes.Buffer can not be recycled (e.g. because its capacity
 // is too small or too big) false is returned and the bytes.Buffer is unmodified, otherwise the bytes.Buffer is
 // recycled and true is returned. In the latter case, the caller should never use again the passed bytes.Buffer.
@@ -3811,6 +4167,11 @@ func PutBytesSlicePtr(b *[]byte) bool {
 	return true
 }
 
+// PutBufioReader recycles the passed bufio.Reader. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Reader.Reset() is called internally, so calling Reset before PutBufioReader is not required. If
+// it is not recycled, the bufio.Reader is left untouched. After a succesfull call to PutBufioReader callers should
+// not use the bufio.Reader anymore and drop all references to it.
+// If you statically know the Size() of the bufio.Reader, it may be more performant to call PutBufioReaderXXX.
 func PutBufioReader(r *bufio.Reader) bool {
 	if r == nil {
 		return false
@@ -3892,6 +4253,11 @@ func PutBufioReader(r *bufio.Reader) bool {
 	return true
 }
 
+// PutBufioWriter recycles the passed bufio.Writer. It returns true if it's recycled, and false otherwise. If it's
+// recycled, bufio.Writer.Reset() is called internally, so calling Reset before PutBufioWriter is not required. If
+// it is not recycled, the bufio.Writer is left untouched. After a succesfull call to PutBufioWriter callers should
+// not use the bufio.Writer anymore and drop all references to it.
+// If you statically know the Size() of the bufio.Writer, it may be more performant to call PutBufioWriterXXX.
 func PutBufioWriter(w *bufio.Writer) bool {
 	if w == nil {
 		return false
