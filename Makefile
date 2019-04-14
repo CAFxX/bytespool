@@ -19,6 +19,10 @@ disasm: build
 test: generate
 	go test .
 
+.PHONY: bench
+bench: test
+	bash -c "benchstat <(go test -run=^$$ -bench=. -count=10 -benchtime=0.1s -benchmem ./test)"
+
 .PHONY: all
-all: test disasm
+all: test bench disasm
 	# done
