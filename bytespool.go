@@ -24,6 +24,29 @@ import (
 
 var buckets = [...]int{256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216}
 
+var pools sync.Pool // *[]byte, with nil slice
+var emptySlice = []byte{}
+
+func puts(p *[]byte) []byte {
+	b := *p
+	*p = emptySlice
+	pools.Put(p)
+	return b
+}
+
+func gets(b []byte) *[]byte {
+	p := _gets()
+	*p = b
+	return p
+}
+
+func _gets() *[]byte {
+	if p, _ := pools.Get().(*[]byte); p != nil {
+		return p
+	}
+	return &[]byte{}
+}
+
 var pool256 sync.Pool  // *[]byte, 256 <= cap < 512
 var poolb256 sync.Pool // *bytes.Buffer, 256 <= Cap < 512
 var poolr256 sync.Pool // *bufio.Reader, 256 <= Size < 512
@@ -71,7 +94,7 @@ func GetBytesBuffer256() *bytes.Buffer {
 		return b
 	}
 	if p := get256(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 256))
 }
@@ -79,7 +102,7 @@ func GetBytesBuffer256() *bytes.Buffer {
 // GetBytesSlice256 gets a byte slice with a capacity of at least 256 bytes and length of 256 bytes.
 func GetBytesSlice256() []byte {
 	if p := get256(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb256(); b != nil {
 		return internal.Bb2bs(b)
@@ -97,7 +120,7 @@ func GetBytesSlicePtr256() *[]byte {
 	}
 	if b := getb256(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 256)
 	return &p
@@ -149,7 +172,7 @@ func PutBytesSlice256(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:256]
-	put256(&p)
+	put256(gets(p))
 	return true
 }
 
@@ -279,7 +302,7 @@ func GetBytesBuffer512() *bytes.Buffer {
 		return b
 	}
 	if p := get512(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 512))
 }
@@ -287,7 +310,7 @@ func GetBytesBuffer512() *bytes.Buffer {
 // GetBytesSlice512 gets a byte slice with a capacity of at least 512 bytes and length of 512 bytes.
 func GetBytesSlice512() []byte {
 	if p := get512(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb512(); b != nil {
 		return internal.Bb2bs(b)
@@ -305,7 +328,7 @@ func GetBytesSlicePtr512() *[]byte {
 	}
 	if b := getb512(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 512)
 	return &p
@@ -357,7 +380,7 @@ func PutBytesSlice512(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:512]
-	put512(&p)
+	put512(gets(p))
 	return true
 }
 
@@ -487,7 +510,7 @@ func GetBytesBuffer1K() *bytes.Buffer {
 		return b
 	}
 	if p := get1K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 1024))
 }
@@ -495,7 +518,7 @@ func GetBytesBuffer1K() *bytes.Buffer {
 // GetBytesSlice1K gets a byte slice with a capacity of at least 1K bytes and length of 1K bytes.
 func GetBytesSlice1K() []byte {
 	if p := get1K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb1K(); b != nil {
 		return internal.Bb2bs(b)
@@ -513,7 +536,7 @@ func GetBytesSlicePtr1K() *[]byte {
 	}
 	if b := getb1K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 1024)
 	return &p
@@ -565,7 +588,7 @@ func PutBytesSlice1K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:1024]
-	put1K(&p)
+	put1K(gets(p))
 	return true
 }
 
@@ -695,7 +718,7 @@ func GetBytesBuffer2K() *bytes.Buffer {
 		return b
 	}
 	if p := get2K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 2048))
 }
@@ -703,7 +726,7 @@ func GetBytesBuffer2K() *bytes.Buffer {
 // GetBytesSlice2K gets a byte slice with a capacity of at least 2K bytes and length of 2K bytes.
 func GetBytesSlice2K() []byte {
 	if p := get2K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb2K(); b != nil {
 		return internal.Bb2bs(b)
@@ -721,7 +744,7 @@ func GetBytesSlicePtr2K() *[]byte {
 	}
 	if b := getb2K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 2048)
 	return &p
@@ -773,7 +796,7 @@ func PutBytesSlice2K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:2048]
-	put2K(&p)
+	put2K(gets(p))
 	return true
 }
 
@@ -903,7 +926,7 @@ func GetBytesBuffer4K() *bytes.Buffer {
 		return b
 	}
 	if p := get4K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 4096))
 }
@@ -911,7 +934,7 @@ func GetBytesBuffer4K() *bytes.Buffer {
 // GetBytesSlice4K gets a byte slice with a capacity of at least 4K bytes and length of 4K bytes.
 func GetBytesSlice4K() []byte {
 	if p := get4K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb4K(); b != nil {
 		return internal.Bb2bs(b)
@@ -929,7 +952,7 @@ func GetBytesSlicePtr4K() *[]byte {
 	}
 	if b := getb4K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 4096)
 	return &p
@@ -981,7 +1004,7 @@ func PutBytesSlice4K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:4096]
-	put4K(&p)
+	put4K(gets(p))
 	return true
 }
 
@@ -1111,7 +1134,7 @@ func GetBytesBuffer8K() *bytes.Buffer {
 		return b
 	}
 	if p := get8K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 8192))
 }
@@ -1119,7 +1142,7 @@ func GetBytesBuffer8K() *bytes.Buffer {
 // GetBytesSlice8K gets a byte slice with a capacity of at least 8K bytes and length of 8K bytes.
 func GetBytesSlice8K() []byte {
 	if p := get8K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb8K(); b != nil {
 		return internal.Bb2bs(b)
@@ -1137,7 +1160,7 @@ func GetBytesSlicePtr8K() *[]byte {
 	}
 	if b := getb8K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 8192)
 	return &p
@@ -1189,7 +1212,7 @@ func PutBytesSlice8K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:8192]
-	put8K(&p)
+	put8K(gets(p))
 	return true
 }
 
@@ -1319,7 +1342,7 @@ func GetBytesBuffer16K() *bytes.Buffer {
 		return b
 	}
 	if p := get16K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 16384))
 }
@@ -1327,7 +1350,7 @@ func GetBytesBuffer16K() *bytes.Buffer {
 // GetBytesSlice16K gets a byte slice with a capacity of at least 16K bytes and length of 16K bytes.
 func GetBytesSlice16K() []byte {
 	if p := get16K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb16K(); b != nil {
 		return internal.Bb2bs(b)
@@ -1345,7 +1368,7 @@ func GetBytesSlicePtr16K() *[]byte {
 	}
 	if b := getb16K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 16384)
 	return &p
@@ -1397,7 +1420,7 @@ func PutBytesSlice16K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:16384]
-	put16K(&p)
+	put16K(gets(p))
 	return true
 }
 
@@ -1527,7 +1550,7 @@ func GetBytesBuffer32K() *bytes.Buffer {
 		return b
 	}
 	if p := get32K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 32768))
 }
@@ -1535,7 +1558,7 @@ func GetBytesBuffer32K() *bytes.Buffer {
 // GetBytesSlice32K gets a byte slice with a capacity of at least 32K bytes and length of 32K bytes.
 func GetBytesSlice32K() []byte {
 	if p := get32K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb32K(); b != nil {
 		return internal.Bb2bs(b)
@@ -1553,7 +1576,7 @@ func GetBytesSlicePtr32K() *[]byte {
 	}
 	if b := getb32K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 32768)
 	return &p
@@ -1605,7 +1628,7 @@ func PutBytesSlice32K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:32768]
-	put32K(&p)
+	put32K(gets(p))
 	return true
 }
 
@@ -1735,7 +1758,7 @@ func GetBytesBuffer64K() *bytes.Buffer {
 		return b
 	}
 	if p := get64K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 65536))
 }
@@ -1743,7 +1766,7 @@ func GetBytesBuffer64K() *bytes.Buffer {
 // GetBytesSlice64K gets a byte slice with a capacity of at least 64K bytes and length of 64K bytes.
 func GetBytesSlice64K() []byte {
 	if p := get64K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb64K(); b != nil {
 		return internal.Bb2bs(b)
@@ -1761,7 +1784,7 @@ func GetBytesSlicePtr64K() *[]byte {
 	}
 	if b := getb64K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 65536)
 	return &p
@@ -1813,7 +1836,7 @@ func PutBytesSlice64K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:65536]
-	put64K(&p)
+	put64K(gets(p))
 	return true
 }
 
@@ -1943,7 +1966,7 @@ func GetBytesBuffer128K() *bytes.Buffer {
 		return b
 	}
 	if p := get128K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 131072))
 }
@@ -1951,7 +1974,7 @@ func GetBytesBuffer128K() *bytes.Buffer {
 // GetBytesSlice128K gets a byte slice with a capacity of at least 128K bytes and length of 128K bytes.
 func GetBytesSlice128K() []byte {
 	if p := get128K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb128K(); b != nil {
 		return internal.Bb2bs(b)
@@ -1969,7 +1992,7 @@ func GetBytesSlicePtr128K() *[]byte {
 	}
 	if b := getb128K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 131072)
 	return &p
@@ -2021,7 +2044,7 @@ func PutBytesSlice128K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:131072]
-	put128K(&p)
+	put128K(gets(p))
 	return true
 }
 
@@ -2151,7 +2174,7 @@ func GetBytesBuffer256K() *bytes.Buffer {
 		return b
 	}
 	if p := get256K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 262144))
 }
@@ -2159,7 +2182,7 @@ func GetBytesBuffer256K() *bytes.Buffer {
 // GetBytesSlice256K gets a byte slice with a capacity of at least 256K bytes and length of 256K bytes.
 func GetBytesSlice256K() []byte {
 	if p := get256K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb256K(); b != nil {
 		return internal.Bb2bs(b)
@@ -2177,7 +2200,7 @@ func GetBytesSlicePtr256K() *[]byte {
 	}
 	if b := getb256K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 262144)
 	return &p
@@ -2229,7 +2252,7 @@ func PutBytesSlice256K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:262144]
-	put256K(&p)
+	put256K(gets(p))
 	return true
 }
 
@@ -2359,7 +2382,7 @@ func GetBytesBuffer512K() *bytes.Buffer {
 		return b
 	}
 	if p := get512K(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 524288))
 }
@@ -2367,7 +2390,7 @@ func GetBytesBuffer512K() *bytes.Buffer {
 // GetBytesSlice512K gets a byte slice with a capacity of at least 512K bytes and length of 512K bytes.
 func GetBytesSlice512K() []byte {
 	if p := get512K(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb512K(); b != nil {
 		return internal.Bb2bs(b)
@@ -2385,7 +2408,7 @@ func GetBytesSlicePtr512K() *[]byte {
 	}
 	if b := getb512K(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 524288)
 	return &p
@@ -2437,7 +2460,7 @@ func PutBytesSlice512K(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:524288]
-	put512K(&p)
+	put512K(gets(p))
 	return true
 }
 
@@ -2567,7 +2590,7 @@ func GetBytesBuffer1M() *bytes.Buffer {
 		return b
 	}
 	if p := get1M(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 1048576))
 }
@@ -2575,7 +2598,7 @@ func GetBytesBuffer1M() *bytes.Buffer {
 // GetBytesSlice1M gets a byte slice with a capacity of at least 1M bytes and length of 1M bytes.
 func GetBytesSlice1M() []byte {
 	if p := get1M(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb1M(); b != nil {
 		return internal.Bb2bs(b)
@@ -2593,7 +2616,7 @@ func GetBytesSlicePtr1M() *[]byte {
 	}
 	if b := getb1M(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 1048576)
 	return &p
@@ -2645,7 +2668,7 @@ func PutBytesSlice1M(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:1048576]
-	put1M(&p)
+	put1M(gets(p))
 	return true
 }
 
@@ -2775,7 +2798,7 @@ func GetBytesBuffer2M() *bytes.Buffer {
 		return b
 	}
 	if p := get2M(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 2097152))
 }
@@ -2783,7 +2806,7 @@ func GetBytesBuffer2M() *bytes.Buffer {
 // GetBytesSlice2M gets a byte slice with a capacity of at least 2M bytes and length of 2M bytes.
 func GetBytesSlice2M() []byte {
 	if p := get2M(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb2M(); b != nil {
 		return internal.Bb2bs(b)
@@ -2801,7 +2824,7 @@ func GetBytesSlicePtr2M() *[]byte {
 	}
 	if b := getb2M(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 2097152)
 	return &p
@@ -2853,7 +2876,7 @@ func PutBytesSlice2M(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:2097152]
-	put2M(&p)
+	put2M(gets(p))
 	return true
 }
 
@@ -2983,7 +3006,7 @@ func GetBytesBuffer4M() *bytes.Buffer {
 		return b
 	}
 	if p := get4M(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 4194304))
 }
@@ -2991,7 +3014,7 @@ func GetBytesBuffer4M() *bytes.Buffer {
 // GetBytesSlice4M gets a byte slice with a capacity of at least 4M bytes and length of 4M bytes.
 func GetBytesSlice4M() []byte {
 	if p := get4M(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb4M(); b != nil {
 		return internal.Bb2bs(b)
@@ -3009,7 +3032,7 @@ func GetBytesSlicePtr4M() *[]byte {
 	}
 	if b := getb4M(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 4194304)
 	return &p
@@ -3061,7 +3084,7 @@ func PutBytesSlice4M(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:4194304]
-	put4M(&p)
+	put4M(gets(p))
 	return true
 }
 
@@ -3191,7 +3214,7 @@ func GetBytesBuffer8M() *bytes.Buffer {
 		return b
 	}
 	if p := get8M(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 8388608))
 }
@@ -3199,7 +3222,7 @@ func GetBytesBuffer8M() *bytes.Buffer {
 // GetBytesSlice8M gets a byte slice with a capacity of at least 8M bytes and length of 8M bytes.
 func GetBytesSlice8M() []byte {
 	if p := get8M(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb8M(); b != nil {
 		return internal.Bb2bs(b)
@@ -3217,7 +3240,7 @@ func GetBytesSlicePtr8M() *[]byte {
 	}
 	if b := getb8M(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 8388608)
 	return &p
@@ -3269,7 +3292,7 @@ func PutBytesSlice8M(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:8388608]
-	put8M(&p)
+	put8M(gets(p))
 	return true
 }
 
@@ -3399,7 +3422,7 @@ func GetBytesBuffer16M() *bytes.Buffer {
 		return b
 	}
 	if p := get16M(); p != nil {
-		return bytes.NewBuffer(*p)
+		return bytes.NewBuffer(puts(p))
 	}
 	return bytes.NewBuffer(make([]byte, 16777216))
 }
@@ -3407,7 +3430,7 @@ func GetBytesBuffer16M() *bytes.Buffer {
 // GetBytesSlice16M gets a byte slice with a capacity of at least 16M bytes and length of 16M bytes.
 func GetBytesSlice16M() []byte {
 	if p := get16M(); p != nil {
-		return *p
+		return puts(p)
 	}
 	if b := getb16M(); b != nil {
 		return internal.Bb2bs(b)
@@ -3425,7 +3448,7 @@ func GetBytesSlicePtr16M() *[]byte {
 	}
 	if b := getb16M(); b != nil {
 		p := internal.Bb2bs(b)
-		return &p
+		return gets(p)
 	}
 	p := make([]byte, 16777216)
 	return &p
@@ -3477,7 +3500,7 @@ func PutBytesSlice16M(p []byte) bool {
 		return PutBytesSlice(p)
 	}
 	p = p[0:16777216]
-	put16M(&p)
+	put16M(gets(p))
 	return true
 }
 
@@ -4018,71 +4041,71 @@ func PutBytesSlice(b []byte) bool {
 
 	case size >= 256 && size < 512:
 		b = b[0:256]
-		put256(&b)
+		put256(gets(b))
 
 	case size >= 512 && size < 1024:
 		b = b[0:512]
-		put512(&b)
+		put512(gets(b))
 
 	case size >= 1024 && size < 2048:
 		b = b[0:1024]
-		put1K(&b)
+		put1K(gets(b))
 
 	case size >= 2048 && size < 4096:
 		b = b[0:2048]
-		put2K(&b)
+		put2K(gets(b))
 
 	case size >= 4096 && size < 8192:
 		b = b[0:4096]
-		put4K(&b)
+		put4K(gets(b))
 
 	case size >= 8192 && size < 16384:
 		b = b[0:8192]
-		put8K(&b)
+		put8K(gets(b))
 
 	case size >= 16384 && size < 32768:
 		b = b[0:16384]
-		put16K(&b)
+		put16K(gets(b))
 
 	case size >= 32768 && size < 65536:
 		b = b[0:32768]
-		put32K(&b)
+		put32K(gets(b))
 
 	case size >= 65536 && size < 131072:
 		b = b[0:65536]
-		put64K(&b)
+		put64K(gets(b))
 
 	case size >= 131072 && size < 262144:
 		b = b[0:131072]
-		put128K(&b)
+		put128K(gets(b))
 
 	case size >= 262144 && size < 524288:
 		b = b[0:262144]
-		put256K(&b)
+		put256K(gets(b))
 
 	case size >= 524288 && size < 1048576:
 		b = b[0:524288]
-		put512K(&b)
+		put512K(gets(b))
 
 	case size >= 1048576 && size < 2097152:
 		b = b[0:1048576]
-		put1M(&b)
+		put1M(gets(b))
 
 	case size >= 2097152 && size < 4194304:
 		b = b[0:2097152]
-		put2M(&b)
+		put2M(gets(b))
 
 	case size >= 4194304 && size < 8388608:
 		b = b[0:4194304]
-		put4M(&b)
+		put4M(gets(b))
 
 	case size >= 8388608 && size < 16777216:
 		b = b[0:8388608]
-		put8M(&b)
+		put8M(gets(b))
 
 	case size >= 16777216 && size < 33554432:
 		b = b[0:16777216]
-		put16M(&b)
+		put16M(gets(b))
 
 	default:
 		return false
