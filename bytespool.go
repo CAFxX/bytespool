@@ -77,6 +77,7 @@ func GetBytesBuffer256() *bytes.Buffer {
 }
 
 // GetBytesSlice256 gets a byte slice with a capacity of at least 256 bytes and length of 256 bytes.
+// GetBytesSlice256 is somewhat slower than GetBytesSlicePtr256, but it is significantly easier to use.
 func GetBytesSlice256() []byte {
 	if p := get256(); p != nil {
 		return internal.Puts(p)
@@ -88,9 +89,9 @@ func GetBytesSlice256() []byte {
 	return p
 }
 
-// GetBytesSlicePtr256 is like GetBytesSlice256 but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice256 requires a pointer-sized allocation per call, whereas PutBytesSlicePtr256 does not
-// allocate.
+// GetBytesSlicePtr256 is like GetBytesSlice256 but returns a pointer to the slice instead.
+// GetBytesSlicePtr256 is somewhat faster than GetBytesSlice256, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr256 the original pointer returned by GetBytesSlicePtr256 to recycle the slice.
 func GetBytesSlicePtr256() *[]byte {
 	if p := get256(); p != nil {
 		return p
@@ -285,6 +286,7 @@ func GetBytesBuffer512() *bytes.Buffer {
 }
 
 // GetBytesSlice512 gets a byte slice with a capacity of at least 512 bytes and length of 512 bytes.
+// GetBytesSlice512 is somewhat slower than GetBytesSlicePtr512, but it is significantly easier to use.
 func GetBytesSlice512() []byte {
 	if p := get512(); p != nil {
 		return internal.Puts(p)
@@ -296,9 +298,9 @@ func GetBytesSlice512() []byte {
 	return p
 }
 
-// GetBytesSlicePtr512 is like GetBytesSlice512 but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice512 requires a pointer-sized allocation per call, whereas PutBytesSlicePtr512 does not
-// allocate.
+// GetBytesSlicePtr512 is like GetBytesSlice512 but returns a pointer to the slice instead.
+// GetBytesSlicePtr512 is somewhat faster than GetBytesSlice512, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr512 the original pointer returned by GetBytesSlicePtr512 to recycle the slice.
 func GetBytesSlicePtr512() *[]byte {
 	if p := get512(); p != nil {
 		return p
@@ -493,6 +495,7 @@ func GetBytesBuffer1K() *bytes.Buffer {
 }
 
 // GetBytesSlice1K gets a byte slice with a capacity of at least 1K bytes and length of 1K bytes.
+// GetBytesSlice1K is somewhat slower than GetBytesSlicePtr1K, but it is significantly easier to use.
 func GetBytesSlice1K() []byte {
 	if p := get1K(); p != nil {
 		return internal.Puts(p)
@@ -504,9 +507,9 @@ func GetBytesSlice1K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr1K is like GetBytesSlice1K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice1K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr1K does not
-// allocate.
+// GetBytesSlicePtr1K is like GetBytesSlice1K but returns a pointer to the slice instead.
+// GetBytesSlicePtr1K is somewhat faster than GetBytesSlice1K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr1K the original pointer returned by GetBytesSlicePtr1K to recycle the slice.
 func GetBytesSlicePtr1K() *[]byte {
 	if p := get1K(); p != nil {
 		return p
@@ -701,6 +704,7 @@ func GetBytesBuffer2K() *bytes.Buffer {
 }
 
 // GetBytesSlice2K gets a byte slice with a capacity of at least 2K bytes and length of 2K bytes.
+// GetBytesSlice2K is somewhat slower than GetBytesSlicePtr2K, but it is significantly easier to use.
 func GetBytesSlice2K() []byte {
 	if p := get2K(); p != nil {
 		return internal.Puts(p)
@@ -712,9 +716,9 @@ func GetBytesSlice2K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr2K is like GetBytesSlice2K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice2K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr2K does not
-// allocate.
+// GetBytesSlicePtr2K is like GetBytesSlice2K but returns a pointer to the slice instead.
+// GetBytesSlicePtr2K is somewhat faster than GetBytesSlice2K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr2K the original pointer returned by GetBytesSlicePtr2K to recycle the slice.
 func GetBytesSlicePtr2K() *[]byte {
 	if p := get2K(); p != nil {
 		return p
@@ -909,6 +913,7 @@ func GetBytesBuffer4K() *bytes.Buffer {
 }
 
 // GetBytesSlice4K gets a byte slice with a capacity of at least 4K bytes and length of 4K bytes.
+// GetBytesSlice4K is somewhat slower than GetBytesSlicePtr4K, but it is significantly easier to use.
 func GetBytesSlice4K() []byte {
 	if p := get4K(); p != nil {
 		return internal.Puts(p)
@@ -920,9 +925,9 @@ func GetBytesSlice4K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr4K is like GetBytesSlice4K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice4K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr4K does not
-// allocate.
+// GetBytesSlicePtr4K is like GetBytesSlice4K but returns a pointer to the slice instead.
+// GetBytesSlicePtr4K is somewhat faster than GetBytesSlice4K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr4K the original pointer returned by GetBytesSlicePtr4K to recycle the slice.
 func GetBytesSlicePtr4K() *[]byte {
 	if p := get4K(); p != nil {
 		return p
@@ -1117,6 +1122,7 @@ func GetBytesBuffer8K() *bytes.Buffer {
 }
 
 // GetBytesSlice8K gets a byte slice with a capacity of at least 8K bytes and length of 8K bytes.
+// GetBytesSlice8K is somewhat slower than GetBytesSlicePtr8K, but it is significantly easier to use.
 func GetBytesSlice8K() []byte {
 	if p := get8K(); p != nil {
 		return internal.Puts(p)
@@ -1128,9 +1134,9 @@ func GetBytesSlice8K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr8K is like GetBytesSlice8K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice8K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr8K does not
-// allocate.
+// GetBytesSlicePtr8K is like GetBytesSlice8K but returns a pointer to the slice instead.
+// GetBytesSlicePtr8K is somewhat faster than GetBytesSlice8K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr8K the original pointer returned by GetBytesSlicePtr8K to recycle the slice.
 func GetBytesSlicePtr8K() *[]byte {
 	if p := get8K(); p != nil {
 		return p
@@ -1325,6 +1331,7 @@ func GetBytesBuffer16K() *bytes.Buffer {
 }
 
 // GetBytesSlice16K gets a byte slice with a capacity of at least 16K bytes and length of 16K bytes.
+// GetBytesSlice16K is somewhat slower than GetBytesSlicePtr16K, but it is significantly easier to use.
 func GetBytesSlice16K() []byte {
 	if p := get16K(); p != nil {
 		return internal.Puts(p)
@@ -1336,9 +1343,9 @@ func GetBytesSlice16K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr16K is like GetBytesSlice16K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice16K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr16K does not
-// allocate.
+// GetBytesSlicePtr16K is like GetBytesSlice16K but returns a pointer to the slice instead.
+// GetBytesSlicePtr16K is somewhat faster than GetBytesSlice16K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr16K the original pointer returned by GetBytesSlicePtr16K to recycle the slice.
 func GetBytesSlicePtr16K() *[]byte {
 	if p := get16K(); p != nil {
 		return p
@@ -1533,6 +1540,7 @@ func GetBytesBuffer32K() *bytes.Buffer {
 }
 
 // GetBytesSlice32K gets a byte slice with a capacity of at least 32K bytes and length of 32K bytes.
+// GetBytesSlice32K is somewhat slower than GetBytesSlicePtr32K, but it is significantly easier to use.
 func GetBytesSlice32K() []byte {
 	if p := get32K(); p != nil {
 		return internal.Puts(p)
@@ -1544,9 +1552,9 @@ func GetBytesSlice32K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr32K is like GetBytesSlice32K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice32K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr32K does not
-// allocate.
+// GetBytesSlicePtr32K is like GetBytesSlice32K but returns a pointer to the slice instead.
+// GetBytesSlicePtr32K is somewhat faster than GetBytesSlice32K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr32K the original pointer returned by GetBytesSlicePtr32K to recycle the slice.
 func GetBytesSlicePtr32K() *[]byte {
 	if p := get32K(); p != nil {
 		return p
@@ -1741,6 +1749,7 @@ func GetBytesBuffer64K() *bytes.Buffer {
 }
 
 // GetBytesSlice64K gets a byte slice with a capacity of at least 64K bytes and length of 64K bytes.
+// GetBytesSlice64K is somewhat slower than GetBytesSlicePtr64K, but it is significantly easier to use.
 func GetBytesSlice64K() []byte {
 	if p := get64K(); p != nil {
 		return internal.Puts(p)
@@ -1752,9 +1761,9 @@ func GetBytesSlice64K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr64K is like GetBytesSlice64K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice64K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr64K does not
-// allocate.
+// GetBytesSlicePtr64K is like GetBytesSlice64K but returns a pointer to the slice instead.
+// GetBytesSlicePtr64K is somewhat faster than GetBytesSlice64K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr64K the original pointer returned by GetBytesSlicePtr64K to recycle the slice.
 func GetBytesSlicePtr64K() *[]byte {
 	if p := get64K(); p != nil {
 		return p
@@ -1949,6 +1958,7 @@ func GetBytesBuffer128K() *bytes.Buffer {
 }
 
 // GetBytesSlice128K gets a byte slice with a capacity of at least 128K bytes and length of 128K bytes.
+// GetBytesSlice128K is somewhat slower than GetBytesSlicePtr128K, but it is significantly easier to use.
 func GetBytesSlice128K() []byte {
 	if p := get128K(); p != nil {
 		return internal.Puts(p)
@@ -1960,9 +1970,9 @@ func GetBytesSlice128K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr128K is like GetBytesSlice128K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice128K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr128K does not
-// allocate.
+// GetBytesSlicePtr128K is like GetBytesSlice128K but returns a pointer to the slice instead.
+// GetBytesSlicePtr128K is somewhat faster than GetBytesSlice128K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr128K the original pointer returned by GetBytesSlicePtr128K to recycle the slice.
 func GetBytesSlicePtr128K() *[]byte {
 	if p := get128K(); p != nil {
 		return p
@@ -2157,6 +2167,7 @@ func GetBytesBuffer256K() *bytes.Buffer {
 }
 
 // GetBytesSlice256K gets a byte slice with a capacity of at least 256K bytes and length of 256K bytes.
+// GetBytesSlice256K is somewhat slower than GetBytesSlicePtr256K, but it is significantly easier to use.
 func GetBytesSlice256K() []byte {
 	if p := get256K(); p != nil {
 		return internal.Puts(p)
@@ -2168,9 +2179,9 @@ func GetBytesSlice256K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr256K is like GetBytesSlice256K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice256K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr256K does not
-// allocate.
+// GetBytesSlicePtr256K is like GetBytesSlice256K but returns a pointer to the slice instead.
+// GetBytesSlicePtr256K is somewhat faster than GetBytesSlice256K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr256K the original pointer returned by GetBytesSlicePtr256K to recycle the slice.
 func GetBytesSlicePtr256K() *[]byte {
 	if p := get256K(); p != nil {
 		return p
@@ -2365,6 +2376,7 @@ func GetBytesBuffer512K() *bytes.Buffer {
 }
 
 // GetBytesSlice512K gets a byte slice with a capacity of at least 512K bytes and length of 512K bytes.
+// GetBytesSlice512K is somewhat slower than GetBytesSlicePtr512K, but it is significantly easier to use.
 func GetBytesSlice512K() []byte {
 	if p := get512K(); p != nil {
 		return internal.Puts(p)
@@ -2376,9 +2388,9 @@ func GetBytesSlice512K() []byte {
 	return p
 }
 
-// GetBytesSlicePtr512K is like GetBytesSlice512K but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice512K requires a pointer-sized allocation per call, whereas PutBytesSlicePtr512K does not
-// allocate.
+// GetBytesSlicePtr512K is like GetBytesSlice512K but returns a pointer to the slice instead.
+// GetBytesSlicePtr512K is somewhat faster than GetBytesSlice512K, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr512K the original pointer returned by GetBytesSlicePtr512K to recycle the slice.
 func GetBytesSlicePtr512K() *[]byte {
 	if p := get512K(); p != nil {
 		return p
@@ -2573,6 +2585,7 @@ func GetBytesBuffer1M() *bytes.Buffer {
 }
 
 // GetBytesSlice1M gets a byte slice with a capacity of at least 1M bytes and length of 1M bytes.
+// GetBytesSlice1M is somewhat slower than GetBytesSlicePtr1M, but it is significantly easier to use.
 func GetBytesSlice1M() []byte {
 	if p := get1M(); p != nil {
 		return internal.Puts(p)
@@ -2584,9 +2597,9 @@ func GetBytesSlice1M() []byte {
 	return p
 }
 
-// GetBytesSlicePtr1M is like GetBytesSlice1M but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice1M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr1M does not
-// allocate.
+// GetBytesSlicePtr1M is like GetBytesSlice1M but returns a pointer to the slice instead.
+// GetBytesSlicePtr1M is somewhat faster than GetBytesSlice1M, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr1M the original pointer returned by GetBytesSlicePtr1M to recycle the slice.
 func GetBytesSlicePtr1M() *[]byte {
 	if p := get1M(); p != nil {
 		return p
@@ -2781,6 +2794,7 @@ func GetBytesBuffer2M() *bytes.Buffer {
 }
 
 // GetBytesSlice2M gets a byte slice with a capacity of at least 2M bytes and length of 2M bytes.
+// GetBytesSlice2M is somewhat slower than GetBytesSlicePtr2M, but it is significantly easier to use.
 func GetBytesSlice2M() []byte {
 	if p := get2M(); p != nil {
 		return internal.Puts(p)
@@ -2792,9 +2806,9 @@ func GetBytesSlice2M() []byte {
 	return p
 }
 
-// GetBytesSlicePtr2M is like GetBytesSlice2M but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice2M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr2M does not
-// allocate.
+// GetBytesSlicePtr2M is like GetBytesSlice2M but returns a pointer to the slice instead.
+// GetBytesSlicePtr2M is somewhat faster than GetBytesSlice2M, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr2M the original pointer returned by GetBytesSlicePtr2M to recycle the slice.
 func GetBytesSlicePtr2M() *[]byte {
 	if p := get2M(); p != nil {
 		return p
@@ -2989,6 +3003,7 @@ func GetBytesBuffer4M() *bytes.Buffer {
 }
 
 // GetBytesSlice4M gets a byte slice with a capacity of at least 4M bytes and length of 4M bytes.
+// GetBytesSlice4M is somewhat slower than GetBytesSlicePtr4M, but it is significantly easier to use.
 func GetBytesSlice4M() []byte {
 	if p := get4M(); p != nil {
 		return internal.Puts(p)
@@ -3000,9 +3015,9 @@ func GetBytesSlice4M() []byte {
 	return p
 }
 
-// GetBytesSlicePtr4M is like GetBytesSlice4M but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice4M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr4M does not
-// allocate.
+// GetBytesSlicePtr4M is like GetBytesSlice4M but returns a pointer to the slice instead.
+// GetBytesSlicePtr4M is somewhat faster than GetBytesSlice4M, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr4M the original pointer returned by GetBytesSlicePtr4M to recycle the slice.
 func GetBytesSlicePtr4M() *[]byte {
 	if p := get4M(); p != nil {
 		return p
@@ -3197,6 +3212,7 @@ func GetBytesBuffer8M() *bytes.Buffer {
 }
 
 // GetBytesSlice8M gets a byte slice with a capacity of at least 8M bytes and length of 8M bytes.
+// GetBytesSlice8M is somewhat slower than GetBytesSlicePtr8M, but it is significantly easier to use.
 func GetBytesSlice8M() []byte {
 	if p := get8M(); p != nil {
 		return internal.Puts(p)
@@ -3208,9 +3224,9 @@ func GetBytesSlice8M() []byte {
 	return p
 }
 
-// GetBytesSlicePtr8M is like GetBytesSlice8M but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice8M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr8M does not
-// allocate.
+// GetBytesSlicePtr8M is like GetBytesSlice8M but returns a pointer to the slice instead.
+// GetBytesSlicePtr8M is somewhat faster than GetBytesSlice8M, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr8M the original pointer returned by GetBytesSlicePtr8M to recycle the slice.
 func GetBytesSlicePtr8M() *[]byte {
 	if p := get8M(); p != nil {
 		return p
@@ -3405,6 +3421,7 @@ func GetBytesBuffer16M() *bytes.Buffer {
 }
 
 // GetBytesSlice16M gets a byte slice with a capacity of at least 16M bytes and length of 16M bytes.
+// GetBytesSlice16M is somewhat slower than GetBytesSlicePtr16M, but it is significantly easier to use.
 func GetBytesSlice16M() []byte {
 	if p := get16M(); p != nil {
 		return internal.Puts(p)
@@ -3416,9 +3433,9 @@ func GetBytesSlice16M() []byte {
 	return p
 }
 
-// GetBytesSlicePtr16M is like GetBytesSlice16M but returns a pointer to the slice instead. This is needed
-// as PutBytesSlice16M requires a pointer-sized allocation per call, whereas PutBytesSlicePtr16M does not
-// allocate.
+// GetBytesSlicePtr16M is like GetBytesSlice16M but returns a pointer to the slice instead.
+// GetBytesSlicePtr16M is somewhat faster than GetBytesSlice16M, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr16M the original pointer returned by GetBytesSlicePtr16M to recycle the slice.
 func GetBytesSlicePtr16M() *[]byte {
 	if p := get16M(); p != nil {
 		return p
@@ -3622,9 +3639,9 @@ func GetBytesBuffer(size int) *bytes.Buffer {
 	}
 }
 
-// GetBytesSlice returns a bytes.Buffer with at least size bytes of capacity.
+// GetBytesSlice returns a byte slice with at least size bytes of capacity and length size.
 // If your code uses buffers of static size, it is more performant to call one of the GetBytesSliceXxx functions instead.
-// GetBytesSlice, contrary to GetBytesSlicePtr, performs a pointer-sized allocation per call.
+// GetBytesSlice is somewhat slower than GetBytesSlicePtr, but it is significantly easier to use.
 // Calling GetBytesSlice with a negative size panics.
 func GetBytesSlice(size int) []byte {
 	switch {
@@ -3686,7 +3703,8 @@ func GetBytesSlice(size int) []byte {
 }
 
 // GetBytesSlicePtr is like GetBytesSlice but returns a pointer to the byte slice.
-// Contrary to GetBytesSlice, it does not perform a pointer-sized allocation per call.
+// GetBytesSlicePtr is somewhat faster than GetBytesSlice, but it is significantly more complicated to use, as you need to
+// provide to PutBytesSlicePtr the original pointer returned by GetBytesSlicePtr to recycle the slice.
 func GetBytesSlicePtr(size int) *[]byte {
 	switch {
 
@@ -3810,6 +3828,7 @@ func GetBufferPool(size int) httputil.BufferPool {
 	return bp
 }
 
+// GetBufioReader returns a bufio.Reader of at least the specified size.
 func GetBufioReader(pr io.Reader, size int) *bufio.Reader {
 	switch {
 
@@ -3869,6 +3888,7 @@ func GetBufioReader(pr io.Reader, size int) *bufio.Reader {
 	}
 }
 
+// GetBufioWriter returns a bufio.Writer of at least the specified size.
 func GetBufioWriter(pw io.Writer, size int) *bufio.Writer {
 	switch {
 
