@@ -34,29 +34,6 @@ import (
 
 var buckets = [...]int{ {{range .}}{{.Bytes}},{{end}} }
 
-var pools sync.Pool // *[]byte, with nil slice
-var emptySlice = []byte{}
-
-func puts(p *[]byte) []byte {
-	b := *p
-	*p = emptySlice
-	pools.Put(p)
-	return b
-}
-
-func gets(b []byte) *[]byte {
-	p := _gets()
-	*p = b
-	return p
-}
-
-func _gets() *[]byte {
-	if p, _ := pools.Get().(*[]byte); p != nil {
-		return p
-	}
-	return &[]byte{}
-}
-
 {{range .}}
 var pool{{.Short}}  sync.Pool // *[]byte, {{.Bytes}} <= cap < {{.BytesHigh}}
 var poolb{{.Short}} sync.Pool // *bytes.Buffer, {{.Bytes}} <= Cap < {{.BytesHigh}}
@@ -105,7 +82,7 @@ func GetBytesBuffer{{.Short}}() *bytes.Buffer {
         return b
 	}
 	if p := get{{.Short}}(); p != nil {
-        return bytes.NewBuffer(puts(p))
+        return bytes.NewBuffer(internal.Puts(p))
 	}
     return bytes.NewBuffer(make([]byte, {{.Bytes}}))
 }
@@ -113,7 +90,7 @@ func GetBytesBuffer{{.Short}}() *bytes.Buffer {
 // GetBytesSlice{{.Short}} gets a byte slice with a capacity of at least {{.Short}} bytes and length of {{.Short}} bytes.
 func GetBytesSlice{{.Short}}() []byte {
     if p := get{{.Short}}(); p != nil {
-        	return puts(p)
+        	return internal.Puts(p)
 	}
 	if b := getb{{.Short}}(); b != nil {
 		return internal.Bb2bs(b)
@@ -131,7 +108,7 @@ func GetBytesSlicePtr{{.Short}}() *[]byte {
 	}
 	if b := getb{{.Short}}(); b != nil {
 		p := internal.Bb2bs(b)
-		return gets(p)
+		return internal.Gets(p)
 	}
     p := make([]byte, {{.Bytes}})
     return &p
@@ -183,7 +160,7 @@ func PutBytesSlice{{.Short}}(p []byte) bool {
         return PutBytesSlice(p)
     }
     p = p[0:{{.Bytes}}]
-    put{{.Short}}(gets(p))
+    put{{.Short}}(internal.Gets(p))
     return true
 }
 
@@ -373,7 +350,7 @@ func PutBytesSlice(b []byte) bool {
     {{range .}}
     case size >= {{.Bytes}} && size < {{.BytesHigh}}:
 		b = b[0:{{.Bytes}}]
-		put{{.Short}}(gets(b))
+		put{{.Short}}(internal.Gets(b))
     {{end}}
 	default:
 		return false
