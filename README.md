@@ -12,6 +12,10 @@ Once you import `github.com/CAFxX/bytespool` you have access to these high-level
 - `GetBytesSlice(size int) []byte` and `PutBytesSlice(b []byte) bool`
 - `GetBytesSlicePtr(size int) *[]byte` and `PutBytesSlicePtr(b *[]byte) bool`
 
+In addition, the following utility APIs are available:
+
+- `Append` is a replacement for `append` that uses the backing pools to avoid allocations when appending to byte slices.
+
 `bytespool` relies on code generation to allow to control the granularity of the backing pools.
 
 The [generated code](https://godoc.org/github.com/CAFxX/bytespool) contains specialized versions of all functions for each of the backing pools. These functions can be used to provide a small speed-up if you statically know the desired sizes at compile-time.
